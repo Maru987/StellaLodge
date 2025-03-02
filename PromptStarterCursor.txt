@@ -1,0 +1,16 @@
+Aide-moi à développer un site web landing page pour une propriété de location en utilisant le Starter Pack fourni. Ce Starter Pack comprend:
+
+1. Une structure de projet Next.js avec App Router
+2. Des composants modulaires pour chaque section de la page
+3. Un système de thème minimaliste noir et blanc
+4. Une configuration flexible pour les propriétés
+
+Utilise ces fichiers comme base pour mon développement. Aide-moi à adapter ce Starter Pack à mes besoins spécifiques en respectant l'architecture existante et en suivant les bonnes pratiques décrites dans le README.
+
+Les documents fournis (cahier des charges, design UI, SRS) doivent servir de référence pour la personnalisation.
+
+N'oublie de lire les Rules car elles sont très important lors du setup du projet.
+
+start the project in the app folder.
+
+npx create-next-app@latest . --typescript --eslint --tailwind --app --import-alias "@/*" --overwrite

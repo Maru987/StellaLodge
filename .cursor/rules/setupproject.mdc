@@ -1,0 +1,127 @@
+---
+description: Setup Project problemes with solution rules
+globs: 
+alwaysApply: false
+---
+# Défis et Améliorations pour le Setup d'une Landing Page Next.js
+
+Ce document recense les défis rencontrés lors de la mise en place du projet Stella Lodge Tahiti et propose des améliorations pour optimiser le processus de démarrage de futurs projets similaires.
+
+## Défis Rencontrés
+
+### 1. Configuration de l'Environnement
+
+- **Variables d'environnement manquantes** : L'erreur "supabaseUrl is required" a été causée par l'absence du fichier `.env.local` avec les variables Supabase nécessaires.
+- **Solution appliquée** : Création d'un fichier `.env.local` avec des valeurs temporaires et modification du fichier `config.ts` pour gérer les cas où les variables ne sont pas définies.
+- **Amélioration possible** : Inclure un script de post-installation qui vérifie et crée automatiquement un fichier `.env.local` à partir du modèle `.env.local.example`.
+
+### 2. Structure des Composants
+
+- **Problèmes d'importation** : Erreur "Cannot find module '../navigation/navigation'" due à une structure de dossiers incohérente.
+- **Solution appliquée** : Création d'un fichier `index.ts` dans le dossier navigation pour simplifier les importations.
+- **Amélioration possible** : Standardiser la structure des dossiers de composants avec un fichier index.ts systématique pour faciliter les importations.
+
+### 3. Particularités de PowerShell
+
+- **Commandes shell incompatibles** : Les commandes utilisant `&&` ou `-p` ne fonctionnent pas correctement dans PowerShell.
+- **Solution appliquée** : Utilisation de commandes PowerShell spécifiques comme `New-Item` avec `-Force` et `-ItemType Directory`.
+- **Amélioration possible** : Créer des scripts cross-platform ou utiliser des outils comme `cross-env` pour garantir la compatibilité entre différents environnements.
+
+### 4. Intégration de Supabase
+
+- **Configuration initiale complexe** : La mise en place de Supabase nécessite plusieurs étapes manuelles.
+- **Solution appliquée** : Création de fonctions d'aide dans `config.ts` et valeurs par défaut pour le développement.
+- **Amélioration possible** : Créer un script d'initialisation Supabase qui configure automatiquement les tables et les politiques de sécurité nécessaires.
+
+### 5. Gestion des Types TypeScript
+
+- **Types manquants pour les données Supabase** : Absence de types pour les tables et les réponses API.
+- **Amélioration possible** : Générer automatiquement les types TypeScript à partir du schéma Supabase avec `supabase-js-v2` ou des outils similaires.
+
+## Améliorations Proposées pour le Template de Démarrage
+
+### 1. Script d'Initialisation Complet
+
+Créer un script unique qui :
+- Configure l'environnement de développement
+- Crée les dossiers nécessaires avec la structure appropriée
+- Génère un fichier `.env.local` à partir du modèle
+- Initialise les composants de base avec des fichiers index.ts
+
+```bash
+# Exemple pour PowerShell
+function Initialize-Project {
+  # Création des dossiers
+  New-Item -Path app/src/components/ui, app/src/components/layout, app/src/components/sections -ItemType Directory -Force
+  
+  # Création des fichiers index.ts
+  foreach ($dir in Get-ChildItem -Path app/src/components -Directory -Recurse) {
+    if (-not (Test-Path "$($dir.FullName)/index.ts")) {
+      Set-Content -Path "$($dir.FullName)/index.ts" -Value "// Export default components"
+    }
+  }
+  
+  # Création du .env.local
+  if (-not (Test-Path "app/.env.local")) {
+    Copy-Item "app/.env.local.example" "app/.env.local"
+    Write-Host "Fichier .env.local créé. Veuillez le compléter avec vos valeurs."
+  }
+}
+```
+
+### 2. Structure de Projet Standardisée
+
+Adopter une structure de projet cohérente :
+
+```
+app/
+├── src/
+│   ├── app/                    # Routes de l'application
+│   ├── components/             # Composants React
+│   │   ├── ui/                 # Composants UI réutilisables
+│   │   │   └── index.ts        # Export des composants UI
+│   │   ├── layout/             # Composants de mise en page
+│   │   │   └── index.ts        # Export des composants de layout
+│   │   └── sections/           # Sections de la page d'accueil
+│   │       └── index.ts        # Export des sections
+│   ├── lib/                    # Utilitaires et configuration
+│   │   ├── supabase/           # Configuration Supabase
+│   │   │   ├── config.ts       # Client et fonctions Supabase
+│   │   │   ├── schema.ts       # Types générés depuis Supabase
+│   │   │   └── index.ts        # Export des fonctionnalités Supabase
+│   │   └── context/            # Contextes React
+│   │       ├── auth-context.tsx # Contexte d'authentification
+│   │       └── index.ts        # Export des contextes
+│   └── types/                  # Types TypeScript globaux
+└── public/                     # Fichiers statiques
+```
+
+### 3. Template de Documentation
+
+Inclure des templates de documentation prêts à l'emploi :
+- README.md avec sections prédéfinies
+- CONTRIBUTING.md pour les contributeurs
+- SETUP_CHALLENGES.md pour documenter les problèmes rencontrés
+
+### 4. Intégration CI/CD
+
+Ajouter des configurations CI/CD de base :
+- GitHub Actions pour les tests et le déploiement
+- Configuration Cloudflare Pages prête à l'emploi
+
+### 5. Outils de Développement Préconfigurés
+
+- ESLint avec règles optimisées pour Next.js et React
+- Prettier pour le formatage du code
+- Husky pour les hooks pre-commit
+- Jest et React Testing Library pour les tests
+
+## Conclusion
+
+La création d'un template de démarrage standardisé avec ces améliorations permettrait de réduire considérablement le temps de mise en place des futurs projets de landing page et d'éviter les problèmes courants rencontrés lors de l'initialisation.
+
+Pour le projet Stella Lodge Tahiti spécifiquement, les prochaines étapes devraient inclure :
+1. La configuration d'un vrai projet Supabase avec les tables nécessaires
+2. La génération des types TypeScript à partir du schéma Supabase
+3. L'implémentation des fonctionnalités de réservation et d'authentification
+4. L'optimisation des performances et de l'accessibilité

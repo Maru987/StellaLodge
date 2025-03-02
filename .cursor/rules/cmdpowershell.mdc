@@ -1,0 +1,113 @@
+---
+description: rules cmd powershell
+globs: 
+---
+
+Why does this command fail in PowerShell?
+&& is not the same in PowerShell
+
+In Linux/macOS Bash, && chains commands only if the previous one succeeds.
+In PowerShell, && is not natively supported (unless you're in a Bash shell like Git Bash).
+cd does not persist across &&
+
+Even if you were using Bash, cd components && mkdir ui && mkdir layout && mkdir sections would work, but only if components already exists.
+If components does not exist, cd will fail, and the rest of the command will not execute.
+✅ How to fix it in PowerShell
+Use ; instead of &&, and ensure components exists:
+
+powershell
+Copier
+Modifier
+cd components; mkdir ui; mkdir layout; mkdir sections
+OR
+Use && but with PowerShell's if logic:
+
+powershell
+Copier
+Modifier
+if (Test-Path components) { cd components; mkdir ui; mkdir layout; mkdir sections }
+✅ Alternative: Create all directories in one command
+Instead of switching directories manually, create all folders at once:
+
+powershell
+Copier
+Modifier
+mkdir components/ui, components/layout, components/sections -ItemType Directory
+OR using New-Item:
+
+powershell
+Copier
+Modifier
+New-Item -Path components/ui, components/layout, components/sections -ItemType Directory
+This ensures everything is created correctly in one go.
+
+🚀 Conclusion
+If using PowerShell, replace && with ; or New-Item.
+If using Git Bash or CMD, your original command should work.
+The best practice is to create all folders in one command.
+
+Le problème vient du fait que PowerShell ne supporte pas l’option -p utilisée dans Bash/Linux. En PowerShell, mkdir ne fonctionne pas de la même manière qu’en Bash.
+
+🚨 Pourquoi ça ne marche pas ?
+mkdir en PowerShell ne supporte pas -p
+Contrairement à Bash, PowerShell ne permet pas de créer plusieurs sous-dossiers avec -p.
+
+
+
+L’erreur "Impossible de trouver un paramètre positionnel"
+PowerShell ne comprend pas -p et pense que app/components/layout est un paramètre erroné.
+
+✅ Solution 1 : Utiliser New-Item (recommandé)
+PowerShell utilise New-Item pour créer des dossiers :
+
+powershell
+Copier
+Modifier
+New-Item -Path app/components/ui, app/components/layout, app/components/sections -ItemType Directory -Force
+✅ Cette commande crée tous les dossiers en une seule fois, même s’ils existent déjà.
+
+✅ Solution 2 : Créer les dossiers un par un
+Si tu veux garder mkdir, fais ceci :
+
+powershell
+Copier
+Modifier
+mkdir app
+mkdir app/components
+mkdir app/components/ui
+mkdir app/components/layout
+mkdir app/components/sections
+⚠️ C'est plus long, mais ça fonctionne.
+
+✅ Solution 3 : Utiliser mkdir avec -Force
+powershell
+Copier
+Modifier
+mkdir app/components/ui -Force
+mkdir app/components/layout -Force
+mkdir app/components/sections -Force
+🚀 Cela permet de forcer la création des dossiers sans erreur.
+
+✅ Solution 4 : Utiliser Git Bash ou CMD
+Si tu veux absolument utiliser mkdir -p, exécute la commande dans Git Bash ou CMD, pas dans PowerShell :
+
+sh
+Copier
+Modifier
+mkdir -p app/components/ui app/components/layout app/components/sections
+📌 Conclusion
+En PowerShell : Utilise New-Item ou mkdir sans -p.
+En Git Bash/CMD : mkdir -p fonctionne.
+Si tu veux un script portable : New-Item est la meilleure option.
+
+Since you want to keep the .cursor/ folder, you need to force the installation:
+
+sh
+Copier
+Modifier
+npx create-next-app@latest . --typescript --eslint --tailwind --app --src-dir --import-alias "@/*" --overwrite
+🚀 This will overwrite existing files but keep non-conflicting folders like .cursor/.
+use this if cursor folder is causing a probleme.
+
+
+

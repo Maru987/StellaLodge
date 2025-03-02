@@ -1,0 +1,27 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="400" fill="#E0F2FE"/>
+  <path d="M100 100 L500 100 L500 300 L100 300 Z" fill="#FFFFFF" stroke="#3B82F6" stroke-width="2"/>
+  <circle cx="300" cy="200" r="10" fill="#EF4444"/>
+  <path d="M300 180 L300 160" stroke="#333333" stroke-width="2"/>
+  <path d="M300 240 L300 220" stroke="#333333" stroke-width="2"/>
+  <path d="M260 200 L280 200" stroke="#333333" stroke-width="2"/>
+  <path d="M320 200 L340 200" stroke="#333333" stroke-width="2"/>
+  <path d="M150 150 L200 150 L200 180 L150 180 Z" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+  <path d="M400 250 L450 250 L450 280 L400 280 Z" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+  <path d="M120 220 L170 220 L170 250 L120 250 Z" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+  <path d="M350 150 L400 150 L400 180 L350 180 Z" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+  <path d="M150 120 L450 120" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M150 160 L450 160" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M150 200 L450 200" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M150 240 L450 240" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M150 280 L450 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M150 120 L150 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M200 120 L200 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M250 120 L250 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M300 120 L300 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M350 120 L350 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M400 120 L400 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <path d="M450 120 L450 280" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5 5"/>
+  <text x="300" y="350" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#333333">Stella Lodge Tahiti</text>
+  <text x="300" y="370" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666666">PK 18, Route de Taravao, Papeete, Tahiti</text>
+</svg> 

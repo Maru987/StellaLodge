@@ -1,0 +1,223 @@
+// app/[locale]/page.tsx
+import { Suspense } from 'react';
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { getPropertyConfig } from '@/lib/config/property-config';
+
+// Layout Components
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
+
+// Section Components
+import { HeroSection } from '@/components/sections/hero-section';
+import { IntroSection } from '@/components/sections/intro-section';
+import { GallerySection } from '@/components/sections/gallery-section';
+import { AmenitiesSection } from '@/components/sections/amenities-section';
+import { LocationSection } from '@/components/sections/location-section';
+import { PricingSection } from '@/components/sections/pricing-section';
+import { TestimonialsSection } from '@/components/sections/testimonials-section';
+import { ContactSection } from '@/components/sections/contact-section';
+
+// Shared Components
+import { BookingWidget } from '@/components/booking/booking-widget';
+import { LoadingSkeleton } from '@/components/shared/loading-skeleton';
+
+// Define dynamic metadata
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  // Get property slug from environment or default to 'stella-lodge-tahiti'
+  const propertySlug = process.env.PROPERTY_SLUG || 'stella-lodge-tahiti';
+  const propertyConfig = getPropertyConfig(propertySlug);
+  
+  return {
+    title: `${propertyConfig.name} - ${propertyConfig.tagline}`,
+    description: propertyConfig.metaDescription,
+    openGraph: {
+      title: propertyConfig.socialSharing.title || propertyConfig.name,
+      description: propertyConfig.socialSharing.description || propertyConfig.metaDescription,
+      images: [propertyConfig.socialSharing.image],
+    },
+  };
+}
+
+export default function PropertyLandingPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  // Supported locales
+  const supportedLocales = ['en', 'fr'];
+  
+  // Check if locale is supported
+  if (!supportedLocales.includes(params.locale)) {
+    notFound();
+  }
+  
+  // Get property slug from environment or default to 'stella-lodge-tahiti'
+  const propertySlug = process.env.PROPERTY_SLUG || 'stella-lodge-tahiti';
+  const propertyConfig = getPropertyConfig(propertySlug);
+  
+  // Scroll handler for the Hero Section's scroll down button
+  const scrollToNextSection = () => {
+    const introSection = document.getElementById('intro');
+    if (introSection) {
+      introSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
+  // Handle booking submission
+  const handleBooking = (bookingData: any) => {
+    console.log('Booking data:', bookingData);
+    // Here you would typically submit to your API
+    window.location.href = `/book?checkin=${bookingData.checkInDate.toISOString()}&checkout=${bookingData.checkOutDate.toISOString()}&guests=${bookingData.guests}`;
+  };
+  
+  return (
+    <div className={propertyConfig.themeClass}>
+      {/* Header with Navigation */}
+      <Header 
+        propertyName={propertyConfig.name}
+        logoUrl={propertyConfig.logo}
+      />
+      
+      {/* Main Content */}
+      <main>
+        {/* Hero Section */}
+        {propertyConfig.sections.hero.enabled && (
+          <HeroSection
+            title={propertyConfig.sections.hero.title || propertyConfig.name}
+            subtitle={propertyConfig.sections.hero.subtitle || propertyConfig.tagline}
+            backgroundImage={propertyConfig.heroImage}
+            backgroundOpacity={propertyConfig.sections.hero.backgroundOpacity || 0.5}
+            ctaText="Book Your Stay"
+            scrollToNextSection={scrollToNextSection}
+            logoImage={propertyConfig.logo}
+          />
+        )}
+        
+        {/* Intro Section with Booking Widget */}
+        {propertyConfig.sections.intro.enabled && (
+          <section id="intro" className="py-16 md:py-24 bg-white">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col lg:flex-row gap-12">
+                {/* Left Column: Intro Content */}
+                <div className="flex-1">
+                  <IntroSection
+                    title={propertyConfig.sections.intro.title || `Welcome to ${propertyConfig.name}`}
+                    content={propertyConfig.sections.intro.content || propertyConfig.description}
+                    features={[
+                      `${propertyConfig.bedrooms} Bedrooms`,
+                      `Accommodates up to ${propertyConfig.maxGuests} guests`,
+                      `${propertyConfig.bathrooms} Bathrooms`,
+                    ]}
+                  />
+                </div>
+                
+                {/* Right Column: Booking Widget */}
+                <div className="lg:w-1/3">
+                  <BookingWidget
+                    propertyName={propertyConfig.name}
+                    basePrice={propertyConfig.pricing.basePrice}
+                    currency={propertyConfig.pricing.currency}
+                    minStay={propertyConfig.pricing.minimumStay}
+                    maxGuests={propertyConfig.maxGuests}
+                    cleaningFee={propertyConfig.pricing.cleaningFee}
+                    serviceFee={propertyConfig.pricing.serviceFee}
+                    seasonalRates={propertyConfig.pricing.seasonalRates}
+                    onBookNow={handleBooking}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+        
+        {/* Gallery Section */}
+        {propertyConfig.sections.gallery.enabled && (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <GallerySection
+              title={propertyConfig.sections.gallery.title || "Property Gallery"}
+              subtitle={propertyConfig.sections.gallery.subtitle}
+              images={propertyConfig.gallery}
+              className="bg-accent-50"
+            />
+          </Suspense>
+        )}
+        
+        {/* Amenities Section */}
+        {propertyConfig.sections.amenities.enabled && (
+          <AmenitiesSection
+            title={propertyConfig.sections.amenities.title || "Amenities & Features"}
+            subtitle={propertyConfig.sections.amenities.subtitle}
+            amenities={propertyConfig.amenities}
+          />
+        )}
+        
+        {/* Location Section */}
+        {propertyConfig.sections.location.enabled && (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <LocationSection
+              title={propertyConfig.sections.location.title || "Location"}
+              subtitle={propertyConfig.sections.location.subtitle}
+              location={propertyConfig.location}
+              nearbyAttractions={propertyConfig.sections.location.showNearbyAttractions ? propertyConfig.nearbyAttractions : []}
+              className="bg-accent-50"
+            />
+          </Suspense>
+        )}
+        
+        {/* Pricing Section */}
+        {propertyConfig.sections.pricing.enabled && (
+          <PricingSection
+            title={propertyConfig.sections.pricing.title || "Rates & Availability"}
+            subtitle={propertyConfig.sections.pricing.subtitle}
+            basePrice={propertyConfig.pricing.basePrice}
+            currency={propertyConfig.pricing.currency}
+            minStay={propertyConfig.pricing.minimumStay}
+            seasonalRates={propertyConfig.pricing.seasonalRates}
+            cleaningFee={propertyConfig.pricing.cleaningFee}
+            serviceFee={propertyConfig.pricing.serviceFee}
+            onBookNow={handleBooking}
+          />
+        )}
+        
+        {/* Testimonials Section */}
+        {propertyConfig.sections.testimonials.enabled && propertyConfig.testimonials && (
+          <TestimonialsSection
+            title={propertyConfig.sections.testimonials.title || "Guest Experiences"}
+            subtitle={propertyConfig.sections.testimonials.subtitle}
+            testimonials={propertyConfig.testimonials}
+            className="bg-accent-50"
+          />
+        )}
+        
+        {/* Contact Section */}
+        {propertyConfig.sections.contact.enabled && (
+          <ContactSection
+            title={propertyConfig.sections.contact.title || "Contact Us"}
+            subtitle={propertyConfig.sections.contact.subtitle}
+            email={propertyConfig.email}
+            phone={propertyConfig.phone}
+            formEnabled={propertyConfig.sections.contact.formEnabled}
+            propertyName={propertyConfig.name}
+          />
+        )}
+      </main>
+      
+      {/* Footer */}
+      <Footer
+        propertyName={propertyConfig.name}
+        contactEmail={propertyConfig.email}
+        contactPhone={propertyConfig.phone}
+        socialLinks={{
+          facebook: 'https://facebook.com',
+          instagram: 'https://instagram.com',
+          twitter: 'https://twitter.com',
+        }}
+      />
+    </div>
+  );
+}

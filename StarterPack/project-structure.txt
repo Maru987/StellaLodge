@@ -1,0 +1,100 @@
+# Structure du Projet Landing Page Starter Kit
+
+```
+property-landing-starter/
+├── app/
+│   ├── [locale]/
+│   │   ├── page.tsx                 # Page principale (landing page)
+│   │   ├── book/
+│   │   │   └── page.tsx             # Page de réservation détaillée
+│   │   ├── confirmation/[id]/
+│   │   │   └── page.tsx             # Page de confirmation
+│   │   ├── login/
+│   │   │   └── page.tsx             # Page de connexion
+│   │   └── admin/
+│   │       ├── page.tsx             # Dashboard admin
+│   │       ├── bookings/
+│   │       │   └── page.tsx         # Gestion des réservations
+│   │       └── content/
+│   │           └── page.tsx         # Gestion du contenu
+│   ├── api/
+│   │   ├── availability/
+│   │   │   └── route.ts             # API pour vérifier les disponibilités
+│   │   ├── bookings/
+│   │   │   └── route.ts             # API pour les réservations
+│   │   └── auth/
+│   │       └── route.ts             # Routes d'authentification
+│   ├── layout.tsx                   # Layout principal avec providers
+│   └── globals.css                  # Styles globaux
+│
+├── components/
+│   ├── ui/                          # Composants UI génériques (ShadCN)
+│   │   ├── button.tsx
+│   │   ├── calendar.tsx
+│   │   └── ...
+│   │
+│   ├── layout/                      # Composants de structure
+│   │   ├── header.tsx               # En-tête avec navigation
+│   │   ├── footer.tsx               # Pied de page
+│   │   └── container.tsx            # Conteneur réutilisable
+│   │
+│   ├── sections/                    # Sections de landing page
+│   │   ├── hero-section.tsx         # Section d'en-tête
+│   │   ├── intro-section.tsx        # Section d'introduction
+│   │   ├── gallery-section.tsx      # Section galerie
+│   │   ├── amenities-section.tsx    # Section des équipements
+│   │   ├── location-section.tsx     # Section localisation
+│   │   ├── pricing-section.tsx      # Section tarifs
+│   │   ├── testimonials-section.tsx # Section témoignages
+│   │   └── contact-section.tsx      # Section contact
+│   │
+│   ├── booking/                     # Composants liés à la réservation
+│   │   ├── booking-widget.tsx       # Widget de réservation flottant
+│   │   ├── date-picker.tsx          # Sélecteur de dates
+│   │   ├── guest-form.tsx           # Formulaire pour invités
+│   │   └── pricing-calculator.tsx   # Calculateur de prix
+│   │
+│   └── shared/                      # Composants partagés
+│       ├── image-gallery.tsx        # Galerie d'images réutilisable
+│       ├── map-view.tsx             # Composant de carte Google Maps
+│       ├── icon-card.tsx            # Carte avec icône pour amenités
+│       └── testimonial-card.tsx     # Carte pour témoignages
+│
+├── lib/                             # Bibliothèques et utilitaires
+│   ├── supabase/                    # Configuration Supabase
+│   │   ├── client.ts                # Client Supabase
+│   │   ├── admin.ts                 # Client admin (serveur uniquement)
+│   │   └── schema.ts                # Types pour le schéma de la BDD
+│   │
+│   ├── hooks/                       # Hooks personnalisés
+│   │   ├── use-booking.ts           # Logique de réservation
+│   │   ├── use-availability.ts      # Vérification de disponibilité
+│   │   └── use-auth.ts              # Logique d'authentification
+│   │
+│   ├── utils/                       # Fonctions utilitaires
+│   │   ├── date-utils.ts            # Utilitaires de date
+│   │   ├── price-utils.ts           # Calculs de prix
+│   │   └── validation.ts            # Schémas de validation
+│   │
+│   └── config/                      # Configuration du site
+│       ├── site-config.ts           # Configuration globale
+│       └── property-config.ts       # Configuration spécifique à la propriété
+│
+├── types/                           # Types TypeScript
+│   ├── property.ts                  # Types liés à la propriété
+│   ├── booking.ts                   # Types liés aux réservations
+│   └── user.ts                      # Types liés aux utilisateurs
+│
+├── styles/                          # Styles spécifiques
+│   └── theme.js                     # Variables de thème
+│
+├── config/                          # Configuration du projet
+│   └── tailwind.config.js           # Configuration Tailwind CSS
+│
+├── public/                          # Fichiers statiques
+│   ├── images/                      # Images du site
+│   ├── favicon.ico                  # Favicon
+│   └── ...
+│
+└── package.json                     # Dépendances du projet
+```
