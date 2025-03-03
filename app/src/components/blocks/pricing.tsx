@@ -26,6 +26,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 
 // Fonction pour faire défiler la page vers une section
 const scrollToSection = (id: string) => {
@@ -68,8 +70,7 @@ export function Pricing({
     guests: '',
     message: ''
   });
-  const [checkIn, setCheckIn] = useState<Date | undefined>(undefined);
-  const [checkOut, setCheckOut] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -82,7 +83,7 @@ export function Pricing({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!checkIn || !checkOut || !selectedPlan) {
+    if (!dateRange?.from || !dateRange?.to || !selectedPlan) {
       setSubmitError("Veuillez remplir tous les champs obligatoires");
       return;
     }
@@ -99,8 +100,8 @@ export function Pricing({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        check_in: format(checkIn, 'yyyy-MM-dd'),
-        check_out: format(checkOut, 'yyyy-MM-dd'),
+        check_in: format(dateRange.from, 'yyyy-MM-dd'),
+        check_out: format(dateRange.to, 'yyyy-MM-dd'),
         guests: parseInt(formData.guests, 10),
         message: formData.message,
         status: 'pending'
@@ -123,8 +124,7 @@ export function Pricing({
           guests: '',
           message: ''
         });
-        setCheckIn(undefined);
-        setCheckOut(undefined);
+        setDateRange(undefined);
         
         // Fermeture du dialogue après 2 secondes
         setTimeout(() => {
@@ -252,70 +252,12 @@ export function Pricing({
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="checkIn" className="text-sm">Date d'arrivée</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal h-9 text-sm",
-                            !checkIn && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-3 w-3" />
-                          {checkIn ? (
-                            format(checkIn, "dd/MM/yyyy", { locale: fr })
-                          ) : (
-                            <span>Sélectionner</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={checkIn}
-                          onSelect={setCheckIn}
-                          initialFocus
-                          disabled={(date) => date < new Date()}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="checkOut" className="text-sm">Date de départ</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal h-9 text-sm",
-                            !checkOut && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-3 w-3" />
-                          {checkOut ? (
-                            format(checkOut, "dd/MM/yyyy", { locale: fr })
-                          ) : (
-                            <span>Sélectionner</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={checkOut}
-                          onSelect={setCheckOut}
-                          initialFocus
-                          disabled={(date) => 
-                            (checkIn ? date < checkIn : false) || 
-                            date < new Date()
-                          }
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                <div className="space-y-1">
+                  <Label htmlFor="dateRange" className="text-sm">Dates du séjour</Label>
+                  <DatePickerWithRange
+                    date={dateRange}
+                    onSelect={setDateRange}
+                  />
                 </div>
                 
                 <div className="space-y-1">
@@ -350,7 +292,7 @@ export function Pricing({
                 <Button 
                   type="submit" 
                   className="w-full bg-blue-600 hover:bg-blue-700 h-9 text-sm"
-                  disabled={!checkIn || !checkOut || isSubmitting}
+                  disabled={!dateRange || isSubmitting}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center">
