@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 
 interface GoogleMapComponentProps {
   latitude: number;
@@ -12,11 +11,6 @@ interface GoogleMapComponentProps {
   apiKey: string;
 }
 
-const containerStyle = {
-  width: '100%',
-  height: '100%'
-};
-
 export default function GoogleMapComponent({
   latitude,
   longitude,
@@ -25,70 +19,24 @@ export default function GoogleMapComponent({
   address,
   apiKey
 }: GoogleMapComponentProps) {
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [isInfoWindowOpen, setIsInfoWindowOpen] = useState(false);
-
   // Forcer l'utilisation des nouvelles coordonnées
   const actualLatitude = -17.527361;
   const actualLongitude = -149.559583;
 
-  const center = {
-    lat: actualLatitude,
-    lng: actualLongitude
-  };
-
-  const onLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    setMap(null);
-  }, []);
-
-  const toggleInfoWindow = () => {
-    setIsInfoWindowOpen(!isInfoWindowOpen);
-  };
-
-  // Forcer le recentrage de la carte sur les nouvelles coordonnées
-  useEffect(() => {
-    if (map) {
-      map.panTo(center);
-    }
-  }, [map, center]);
+  // Créer l'URL de l'iframe Google Maps
+  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${actualLatitude},${actualLongitude}&zoom=${zoom}&language=fr`;
 
   return (
-    <LoadScript googleMapsApiKey={apiKey}>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={zoom}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        options={{
-          disableDefaultUI: false,
-          zoomControl: true,
-          streetViewControl: true,
-          mapTypeControl: true,
-          fullscreenControl: true,
-        }}
-      >
-        <Marker
-          position={center}
-          onClick={toggleInfoWindow}
-        >
-          {isInfoWindowOpen && (
-            <InfoWindow
-              position={center}
-              onCloseClick={toggleInfoWindow}
-            >
-              <div className="p-2">
-                <h3 className="font-bold text-lg">{name}</h3>
-                <p className="text-sm text-gray-600">{address}</p>
-              </div>
-            </InfoWindow>
-          )}
-        </Marker>
-      </GoogleMap>
-    </LoadScript>
+    <div className="w-full h-full">
+      <iframe
+        title={`Carte de ${name}`}
+        width="100%"
+        height="100%"
+        frameBorder="0"
+        style={{ border: 0 }}
+        src={mapUrl}
+        allowFullScreen
+      ></iframe>
+    </div>
   );
 } 

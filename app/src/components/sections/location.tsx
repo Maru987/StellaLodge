@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Property, NearbyAttraction } from '@/types/property';
-import { MapPin, Navigation, Clock } from 'lucide-react';
-import GoogleMapComponent from '../GoogleMap';
+import { MapPin, Navigation, Clock, ExternalLink } from 'lucide-react';
 
 interface LocationProps {
   property: Property;
@@ -15,17 +14,8 @@ interface LocationProps {
 
 export function Location({ property, className }: LocationProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
   
   const { location, nearbyAttractions = [] } = property;
-  
-  // Charger la clé API depuis les variables d'environnement
-  useEffect(() => {
-    const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (envApiKey) {
-      setGoogleMapsApiKey(envApiKey);
-    }
-  }, []);
   
   // Extraire les catégories uniques des attractions
   const categories = nearbyAttractions.length > 0 
@@ -51,10 +41,18 @@ export function Location({ property, className }: LocationProps) {
     return translations[category] || category;
   };
 
-  // Obtenir l'URL de l'image de la carte
-  const getMapImageUrl = () => {
-    // Utiliser une image statique locale au lieu d'une API externe
-    return '/map-placeholder.svg';
+  // Coordonnées de l'emplacement
+  const actualLatitude = -17.527361;
+  const actualLongitude = -149.559583;
+
+  // URL pour l'iframe Google Maps
+  const getGoogleMapsEmbedUrl = () => {
+    return `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.0!2d${actualLongitude}!3d${actualLatitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTfCsDMxJzM4LjUiUyAxNDnCsDMzJzM0LjUiVw!5e0!3m2!1sfr!2sfr!4v1615129123456!5m2!1sfr!2sfr`;
+  };
+
+  // URL pour voir sur Google Maps
+  const getGoogleMapsViewUrl = () => {
+    return `https://www.google.com/maps?q=${actualLatitude},${actualLongitude}&z=15&hl=fr`;
   };
 
   return (
@@ -89,28 +87,27 @@ export function Location({ property, className }: LocationProps) {
           transition={{ duration: 0.5 }}
           className="relative h-[500px] w-full rounded-lg overflow-hidden shadow-md mb-16"
         >
-          {googleMapsApiKey ? (
-            <GoogleMapComponent
-              latitude={location.latitude}
-              longitude={location.longitude}
-              zoom={location.mapZoom || 15}
-              name={property.name}
-              address={`${location.address}, ${location.city}, ${location.region}`}
-              apiKey={googleMapsApiKey}
-            />
-          ) : (
-            <>
-              <Image
-                src={getMapImageUrl()}
-                alt={`Carte de ${property.name}`}
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
-                <p className="text-white text-lg mb-4">La carte interactive n'est pas disponible pour le moment.</p>
-              </div>
-            </>
-          )}
+          <iframe 
+            width="100%" 
+            height="100%" 
+            frameBorder="0" 
+            style={{ border: 0 }}
+            src={getGoogleMapsEmbedUrl()} 
+            allowFullScreen
+            title="Carte de l'emplacement"
+            className="absolute inset-0"
+          />
+          <div className="absolute bottom-4 right-4 z-10">
+            <a 
+              href={getGoogleMapsViewUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-md"
+            >
+              <ExternalLink size={16} />
+              Voir sur Google Maps
+            </a>
+          </div>
         </motion.div>
 
         {/* Attractions à proximité */}
