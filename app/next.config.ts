@@ -11,7 +11,12 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['images.unsplash.com', 'maps.googleapis.com', 'staticmap.openstreetmap.de'],
+    domains: [
+      'images.unsplash.com', 
+      'maps.googleapis.com', 
+      'staticmap.openstreetmap.de',
+      'qvwrtqwygauirugoafry.supabase.co'
+    ],
     remotePatterns: [
       {
         protocol: 'https',
@@ -26,6 +31,11 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'staticmap.openstreetmap.de',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'qvwrtqwygauirugoafry.supabase.co',
         pathname: '/**',
       },
     ],

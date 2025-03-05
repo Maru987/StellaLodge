@@ -13,7 +13,6 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
   const router = useRouter();
 
   useEffect(() => {
@@ -35,32 +34,15 @@ export default function AuthPage() {
     setMessage(null);
 
     try {
-      if (mode === 'login') {
-        // Connexion
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
-        
-        console.log("Connexion réussie, redirection vers /admin");
-        // Redirection directe vers la page admin
-        window.location.href = '/admin';
-      } else {
-        // Inscription
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        setMessage({
-          text: 'Vérifiez votre email pour confirmer votre inscription.',
-          type: 'success',
-        });
-      }
+      if (error) throw error;
+      
+      console.log("Connexion réussie, redirection vers /admin");
+      window.location.href = '/admin';
     } catch (error: any) {
       setMessage({
         text: error.message || 'Une erreur est survenue',
@@ -76,10 +58,10 @@ export default function AuthPage() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            {mode === 'login' ? 'Connexion à votre espace' : 'Créer un compte'}
+            Connexion à votre espace
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {mode === 'login' ? 'Accédez à votre espace administrateur' : 'Inscrivez-vous pour accéder à l\'espace administrateur'}
+            Accédez à votre espace administrateur
           </p>
         </div>
 
@@ -119,7 +101,7 @@ export default function AuthPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -129,35 +111,21 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {mode === 'login' && (
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link href="/auth/reset-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  Mot de passe oublié?
-                </Link>
-              </div>
-            </div>
-          )}
-
           <div>
             <Button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
             >
-              {loading ? 'Chargement...' : mode === 'login' ? 'Se connecter' : 'S\'inscrire'}
+              {loading ? 'Chargement...' : 'Se connecter'}
             </Button>
           </div>
         </form>
 
-        <div className="text-center mt-4">
-          <button
-            type="button"
-            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-            className="font-medium text-primary-600 hover:text-primary-500"
-          >
-            {mode === 'login' ? 'Créer un nouveau compte' : 'Déjà un compte? Se connecter'}
-          </button>
+        <div className="flex justify-center space-x-4 mt-4">
+          <Link href="/" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+            Retour à l'accueil
+          </Link>
         </div>
       </div>
     </div>

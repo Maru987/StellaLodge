@@ -146,7 +146,7 @@ export const propertyData: Property = {
   
   bedrooms: 2,
   bathrooms: 1,
-  maxGuests: 4,
+  maxGuests: 6,
   squareMeters: 85,
   
   nearbyAttractions: [
@@ -252,7 +252,7 @@ export const propertyData: Property = {
       enabled: true
     },
     intro: {
-      enabled: true,
+      enabled: false,
       title: 'Bienvenue au Stella Lodge',
       subtitle: 'Votre maison confortable au cœur de Papeete'
     },

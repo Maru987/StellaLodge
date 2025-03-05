@@ -67,21 +67,6 @@ export function Header({ propertyName, logoUrl, className }: HeaderProps) {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-center relative">
-          {/* Logo pour mobile */}
-          <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                alt={propertyName}
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            ) : (
-              <span className="text-white font-bold text-lg">{propertyName}</span>
-            )}
-          </div>
-          
           {/* Navigation Desktop */}
           <nav className="hidden md:flex items-center gap-10">
             <NavLinks isScrolled={isScrolled} onClick={handleNavClick} />
