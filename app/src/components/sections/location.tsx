@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Property, NearbyAttraction } from '@/types/property';
-import { MapPin, Navigation, Clock, Key } from 'lucide-react';
+import { MapPin, Navigation, Clock } from 'lucide-react';
 import GoogleMapComponent from '../GoogleMap';
 
 interface LocationProps {
@@ -16,24 +16,24 @@ interface LocationProps {
 export function Location({ property, className }: LocationProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
-  const [isKeyModalOpen, setIsKeyModalOpen] = useState<boolean>(false);
   
   const { location, nearbyAttractions = [] } = property;
   
-  // Charger la clé API depuis le localStorage au chargement du composant
+  // Charger la clé API depuis les variables d'environnement ou le localStorage
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('googleMapsApiKey');
-    if (savedApiKey) {
-      setGoogleMapsApiKey(savedApiKey);
+    // Priorité à la variable d'environnement
+    const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    
+    if (envApiKey && envApiKey !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+      setGoogleMapsApiKey(envApiKey);
+    } else {
+      // Fallback sur le localStorage si pas de variable d'environnement
+      const savedApiKey = localStorage.getItem('googleMapsApiKey');
+      if (savedApiKey) {
+        setGoogleMapsApiKey(savedApiKey);
+      }
     }
   }, []);
-
-  // Sauvegarder la clé API dans le localStorage
-  const saveApiKey = (key: string) => {
-    localStorage.setItem('googleMapsApiKey', key);
-    setGoogleMapsApiKey(key);
-    setIsKeyModalOpen(false);
-  };
   
   // Extraire les catégories uniques des attractions
   const categories = nearbyAttractions.length > 0 
@@ -115,68 +115,19 @@ export function Location({ property, className }: LocationProps) {
                 className="object-cover"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
-                <p className="text-white text-lg mb-4">Pour afficher la carte interactive, veuillez configurer votre clé API Google Maps</p>
-                <button
-                  onClick={() => setIsKeyModalOpen(true)}
+                <p className="text-white text-lg mb-4">Pour afficher la carte interactive, veuillez configurer votre clé API Google Maps dans le fichier .env.local</p>
+                <a
+                  href="https://developers.google.com/maps/documentation/javascript/get-api-key"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors"
                 >
-                  <Key className="w-4 h-4 mr-2" />
-                  Configurer la clé API
-                </button>
+                  Obtenir une clé API Google Maps
+                </a>
               </div>
             </>
           )}
         </motion.div>
-
-        {/* Modal pour la clé API */}
-        {isKeyModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4">Configurer la clé API Google Maps</h3>
-              <p className="text-gray-600 mb-4">
-                Pour utiliser Google Maps, vous devez fournir une clé API valide. Cette clé sera stockée localement dans votre navigateur.
-              </p>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const apiKey = formData.get('apiKey') as string;
-                if (apiKey) {
-                  saveApiKey(apiKey);
-                }
-              }}>
-                <div className="mb-4">
-                  <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-1">
-                    Clé API Google Maps
-                  </label>
-                  <input
-                    type="text"
-                    id="apiKey"
-                    name="apiKey"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Entrez votre clé API Google Maps"
-                    defaultValue={googleMapsApiKey}
-                    required
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsKeyModalOpen(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600"
-                  >
-                    Enregistrer
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
 
         {/* Attractions à proximité */}
         {nearbyAttractions.length > 0 && (
