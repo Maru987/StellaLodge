@@ -48,7 +48,6 @@ export function Pricing({ property, className }: PricingProps) {
         "Accès à toutes les commodités",
         "Support 24/7",
         "Check-in flexible",
-        "Tarif préférentiel (-10%)",
       ],
       description: "Économisez 3 000 XPF pour un séjour de 2 nuits par rapport au tarif journalier (15 000 XPF/nuit)",
       buttonText: "Réserver maintenant",
@@ -57,34 +56,18 @@ export function Pricing({ property, className }: PricingProps) {
     },
     {
       name: "HEBDOMADAIRE",
-      price: "10000",
-      yearlyPrice: "8000",
+      price: "12000",
+      yearlyPrice: "9600",
       period: "par nuit",
       features: [
-        "Tous les avantages du plan journalier",
-        "Tarif préférentiel (-33%)",
-        "Service de ménage inclus",
+        "Accès à toutes les commodités",
+        "Support 24/7",
+        "Check-in flexible",
       ],
-      description: "Économisez 35 000 XPF par semaine par rapport au tarif journalier (15 000 XPF/nuit)",
+      description: "Économisez 21 000 XPF par semaine par rapport au tarif journalier (15 000 XPF/nuit)",
       buttonText: "Réserver maintenant",
       href: "#contact",
       isPopular: true,
-    },
-    {
-      name: "MENSUEL",
-      price: "7000",
-      yearlyPrice: "5600",
-      period: "par nuit",
-      features: [
-        "Tous les avantages du plan journalier",
-        "Tarif préférentiel (-53%)",
-        "Services de ménage hebdomadaire",
-        "Accès prioritaire aux réservations",
-      ],
-      description: `Économisez 240 000 XPF par mois par rapport au tarif journalier (15 000 XPF/nuit)`,
-      buttonText: "Réserver maintenant",
-      href: "#contact",
-      isPopular: false,
     }
   ];
 

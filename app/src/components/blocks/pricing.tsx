@@ -104,16 +104,9 @@ export function Pricing({
         }
         break;
       case "HEBDOMADAIRE":
-        // Pour le forfait hebdomadaire, on peut réserver entre 7 et 29 nuits
-        if (diffDays < 7 || diffDays >= 30) {
-          setDateError("Le forfait hebdomadaire permet de réserver entre 7 et 29 nuits.");
-          return false;
-        }
-        break;
-      case "MENSUEL":
-        // Pour le forfait mensuel, on doit réserver au moins 30 nuits
-        if (diffDays < 30) {
-          setDateError("Le forfait mensuel permet de réserver 30 nuits ou plus.");
+        // Pour le forfait hebdomadaire, on peut réserver 7 nuits ou plus
+        if (diffDays < 7) {
+          setDateError("Le forfait hebdomadaire permet de réserver 7 nuits ou plus.");
           return false;
         }
         break;
@@ -233,9 +226,6 @@ export function Pricing({
         break;
       case "HEBDOMADAIRE":
         to = addDays(from, 7);
-        break;
-      case "MENSUEL":
-        to = addDays(from, 30);
         break;
       default:
         to = addDays(from, 1);
@@ -432,7 +422,7 @@ export function Pricing({
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
         {plans.map((plan, index) => (
           <motion.div
             key={index}
@@ -537,9 +527,6 @@ export function Pricing({
                   >
                     {plan.buttonText}
                   </button>
-                  <p className="mt-3 text-xs leading-5 text-gray-600">
-                    {plan.description}
-                  </p>
                 </motion.div>
               </div>
             </div>
