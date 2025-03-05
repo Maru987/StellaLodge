@@ -19,19 +19,11 @@ export function Location({ property, className }: LocationProps) {
   
   const { location, nearbyAttractions = [] } = property;
   
-  // Charger la clé API depuis les variables d'environnement ou le localStorage
+  // Charger la clé API depuis les variables d'environnement
   useEffect(() => {
-    // Priorité à la variable d'environnement
     const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    
-    if (envApiKey && envApiKey !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+    if (envApiKey) {
       setGoogleMapsApiKey(envApiKey);
-    } else {
-      // Fallback sur le localStorage si pas de variable d'environnement
-      const savedApiKey = localStorage.getItem('googleMapsApiKey');
-      if (savedApiKey) {
-        setGoogleMapsApiKey(savedApiKey);
-      }
     }
   }, []);
   
@@ -115,15 +107,7 @@ export function Location({ property, className }: LocationProps) {
                 className="object-cover"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
-                <p className="text-white text-lg mb-4">Pour afficher la carte interactive, veuillez configurer votre clé API Google Maps dans le fichier .env.local</p>
-                <a
-                  href="https://developers.google.com/maps/documentation/javascript/get-api-key"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors"
-                >
-                  Obtenir une clé API Google Maps
-                </a>
+                <p className="text-white text-lg mb-4">La carte interactive n'est pas disponible pour le moment.</p>
               </div>
             </>
           )}
