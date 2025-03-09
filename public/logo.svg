@@ -1,0 +1,7 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="20" fill="#FFFFFF"/>
+  <path d="M100 30 L130 80 L160 140 H40 L70 80 Z" fill="#333333"/>
+  <circle cx="100" cy="70" r="15" fill="#FFFFFF"/>
+  <text x="50" y="170" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333333">STELLA</text>
+  <text x="60" y="190" font-family="Arial, sans-serif" font-size="14" fill="#333333">LODGE</text>
+</svg> 
