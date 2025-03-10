@@ -130,8 +130,13 @@ export function DatePickerWithRange({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-auto p-0" 
+          className="w-auto p-0 max-h-[90vh] overflow-y-auto" 
           align="start"
+          side="bottom"
+          alignOffset={-10}
+          sideOffset={8}
+          avoidCollisions={true}
+          collisionPadding={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {isLoading ? (
             <div className="p-4 flex items-center justify-center">
