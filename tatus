@@ -1,0 +1,9 @@
+[33m329b68a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Amélioration de la section tarifs: centrage des cartes, suppression des descriptions et uniformisation des caractéristiques
+[33m1640dc0[m Intégration de Google Maps avec iframe pour une meilleure expérience utilisateur
+[33m88a31bc[m Suppression de la boîte de dialogue pour la clé API Google Maps
+[33m7a50262[m Intégration de la clé API Google Maps via les variables d'environnement
+[33md89086f[m Amélioration de l'interface admin et correction des problèmes d'affichage des images
+[33m382808f[m Feat: Amélioration du sélecteur de dates dans le formulaire de réservation
+[33m1a25275[m Fix: Désactiver ESLint et TypeScript pendant le build pour le déploiement Vercel
+[33mbe976cf[m Fix: Downgrade React to version 18.3.1 for compatibility with react-day-picker
+[33me056d71[m Premier commit - Site web StellaLodge

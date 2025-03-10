@@ -17,10 +17,28 @@ export function Hero({ property, className }: HeroProps) {
   const { name, tagline } = property;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détecter si l'appareil est mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Vérifier au chargement
+    checkIfMobile();
+    
+    // Vérifier au redimensionnement
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   // Effet pour gérer la lecture automatique de la vidéo
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && !isMobile) {
       // Événement pour détecter quand la vidéo est chargée
       const handleLoadedData = () => {
         console.log("Vidéo chargée avec succès");
@@ -48,7 +66,7 @@ export function Hero({ property, className }: HeroProps) {
         }
       };
     }
-  }, []);
+  }, [isMobile]);
 
   return (
     <section 
@@ -59,24 +77,34 @@ export function Hero({ property, className }: HeroProps) {
     >
       {/* Vidéo d'arrière-plan */}
       <div className="absolute inset-0 z-0">
-        {/* Image de secours si la vidéo ne se charge pas */}
-        {!isVideoLoaded && (
-          <div className="absolute inset-0 bg-primary-900/50" />
+        {/* Image de secours si la vidéo ne se charge pas ou sur mobile */}
+        {(!isVideoLoaded || isMobile) && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center" 
+            style={{ 
+              backgroundImage: 'url(/images/Terrasse.jpg)',
+              backgroundPosition: 'center center',
+              backgroundSize: 'cover'
+            }} 
+          />
         )}
         
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          controls={false}
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
-          src="/IMG_E0320.MP4"
-        >
-          Votre navigateur ne prend pas en charge la lecture de vidéos.
-        </video>
+        {/* Vidéo uniquement sur desktop */}
+        {!isMobile && (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover"
+            src="/IMG_E0320.MP4"
+          >
+            Votre navigateur ne prend pas en charge la lecture de vidéos.
+          </video>
+        )}
         <div className="absolute inset-0 bg-black/40" />
       </div>
 

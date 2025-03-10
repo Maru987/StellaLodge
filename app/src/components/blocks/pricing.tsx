@@ -136,13 +136,23 @@ export function Pricing({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!dateRange?.from || !dateRange?.to || !selectedPlan) {
-      setSubmitError("Veuillez remplir tous les champs obligatoires");
+    if (isSubmitting) return;
+    
+    // Validation du plan sélectionné
+    if (!selectedPlan) {
+      setSubmitError("Veuillez sélectionner un plan");
       return;
     }
     
-    // Valider la plage de dates
-    if (!validateDateRange(dateRange)) {
+    // Validation des dates
+    if (!dateRange?.from || !dateRange?.to) {
+      setSubmitError("Veuillez sélectionner les dates de séjour");
+      return;
+    }
+    
+    // Validation des champs obligatoires
+    if (!formData.name || !formData.email || !formData.phone || !formData.guests) {
+      setSubmitError("Veuillez remplir tous les champs obligatoires");
       return;
     }
     
@@ -150,6 +160,10 @@ export function Pricing({
     setSubmitError(null);
     
     try {
+      // Préparation des dates au format ISO
+      const checkInDate = format(dateRange.from, 'yyyy-MM-dd');
+      const checkOutDate = format(dateRange.to, 'yyyy-MM-dd');
+      
       // Préparation des données pour Supabase
       const reservationData: Reservation = {
         plan_name: selectedPlan.name,
@@ -158,19 +172,15 @@ export function Pricing({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        check_in: format(dateRange.from, 'yyyy-MM-dd'),
-        check_out: format(dateRange.to, 'yyyy-MM-dd'),
+        check_in: checkInDate,
+        check_out: checkOutDate,
         guests: parseInt(formData.guests, 10),
         message: formData.message,
         status: 'pending'
       };
       
-      console.log("Données de réservation à envoyer:", reservationData);
-      
       // Envoi des données à Supabase
       const result = await saveReservation(reservationData);
-      
-      console.log("Résultat de saveReservation:", result);
       
       if (result.success) {
         setSubmitSuccess(true);
@@ -190,10 +200,10 @@ export function Pricing({
           setSubmitSuccess(false);
         }, 2000);
       } else {
-        setSubmitError(`Erreur lors de l'enregistrement: ${result.error ? JSON.stringify(result.error) : 'Erreur inconnue'}`);
+        // Gestion générique de l'erreur
+        setSubmitError(`Erreur lors de l'enregistrement. Veuillez réessayer.`);
       }
     } catch (error) {
-      console.error("Erreur détaillée lors de la soumission:", error);
       setSubmitError(`Erreur inattendue: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsSubmitting(false);
@@ -207,38 +217,28 @@ export function Pricing({
     setSubmitSuccess(false);
     setDateRange(undefined);
     setDateError(null);
+    
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      guests: '',
+      message: ''
+    });
   };
 
   // Fonction pour suggérer une plage de dates valide en fonction du forfait
   const suggestDateRange = () => {
     if (!selectedPlan) return;
     
-    const today = new Date();
-    const from = new Date(today);
-    let to;
-    
-    switch (selectedPlan.name) {
-      case "JOURNALIER":
-        to = addDays(from, 1);
-        break;
-      case "2 NUITS":
-        to = addDays(from, 2);
-        break;
-      case "HEBDOMADAIRE":
-        to = addDays(from, 7);
-        break;
-      default:
-        to = addDays(from, 1);
-    }
-    
-    setDateRange({ from, to });
+    // Nous ne suggérons plus de dates automatiquement
+    // L'utilisateur choisira lui-même ses dates
   };
 
   // Ajouter un effet pour suggérer des dates lorsque le forfait change
   useEffect(() => {
-    if (selectedPlan && open) {
-      suggestDateRange();
-    }
+    // Nous ne suggérons plus de dates automatiquement
+    // Nous laissons simplement le champ vide pour que l'utilisateur puisse choisir
   }, [selectedPlan, open]);
 
   return (

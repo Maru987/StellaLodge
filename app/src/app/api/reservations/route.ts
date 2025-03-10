@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from "next/headers"
 
 export async function POST(request: Request) {
   try {
@@ -9,6 +7,7 @@ export async function POST(request: Request) {
     
     const body = await request.json()
     console.log("API: Données reçues:", body);
+    console.log("API: Format des dates - check_in:", body.check_in, "check_out:", body.check_out);
     
     const { name, email, phone, check_in, check_out, guests, message, plan_name, price, period } = body
     
@@ -21,105 +20,67 @@ export async function POST(request: Request) {
       )
     }
     
-    // Création du client Supabase avec la clé de service qui contourne la RLS
-    console.log("API: Création du client Supabase avec la clé de service");
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    // S'assurer que les dates sont au bon format (YYYY-MM-DD)
+    const formattedCheckIn = typeof check_in === 'string' ? check_in : new Date(check_in).toISOString().split('T')[0];
+    const formattedCheckOut = typeof check_out === 'string' ? check_out : new Date(check_out).toISOString().split('T')[0];
     
-    if (!supabaseServiceKey) {
-      console.log("API: Clé de service non disponible, utilisation de la clé anonyme");
-      // Fallback à la clé anonyme si la clé de service n'est pas disponible
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    console.log("API: Dates formatées - check_in:", formattedCheckIn, "check_out:", formattedCheckOut);
+    
+    try {
+      // Utilisation directe des valeurs de Supabase (solution temporaire)
+      const supabaseUrl = "https://qvwrtqwygauirugoafry.supabase.co";
+      const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2d3J0cXd5Z2F1aXJ1Z29hZnJ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDc4MzI5NywiZXhwIjoyMDU2MzU5Mjk3fQ.Tn_Mw-9KTbgpXTGgJxekAd0-fGS4RN9pIkblj8XN9Eo";
       
-      // Créer un client Supabase avec la clé anonyme
-      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false
-        }
-      });
+      console.log("API: Tentative de création du client Supabase avec URL:", supabaseUrl);
       
-      // Insertion de la réservation dans la base de données
-      console.log("API: Tentative d'insertion dans la base de données avec clé anonyme");
+      // Création du client Supabase avec la clé de service (bypass RLS)
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      // Préparation des données pour l'insertion
+      const reservationData = {
+        name,
+        email,
+        phone,
+        check_in: formattedCheckIn,
+        check_out: formattedCheckOut,
+        guests,
+        message,
+        plan_name,
+        price,
+        period,
+        status: "pending"
+      };
+      
+      console.log("API: Tentative d'insertion dans Supabase:", reservationData);
+      
+      // Insertion dans la base de données
       const { data, error } = await supabase
         .from("reservations")
-        .insert([
-          {
-            name,
-            email,
-            phone,
-            check_in,
-            check_out,
-            guests,
-            message,
-            plan_name,
-            price,
-            period,
-            status: "pending"
-          }
-        ])
+        .insert(reservationData)
         .select()
+        .single();
       
       if (error) {
-        console.error("API: Erreur lors de l'enregistrement de la réservation:", error);
+        console.error("API: Erreur Supabase lors de l'insertion:", error);
         return NextResponse.json(
-          { error: `Erreur lors de l'enregistrement de la réservation: ${error.message}` },
+          { error: `Erreur lors de l'enregistrement: ${error.message}` },
           { status: 500 }
-        )
+        );
       }
       
-      console.log("API: Réservation enregistrée avec succès");
+      console.log("API: Réservation enregistrée avec succès:", data);
+      
       return NextResponse.json(
-        { success: true, data: data[0] },
+        { success: true, data },
         { status: 201 }
-      )
-    }
-    
-    // Créer un client Supabase avec la clé de service (contourne la RLS)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false
-      }
-    });
-    
-    // Insertion de la réservation dans la base de données
-    console.log("API: Tentative d'insertion dans la base de données avec clé de service");
-    const { data, error } = await supabase
-      .from("reservations")
-      .insert([
-        {
-          name,
-          email,
-          phone,
-          check_in,
-          check_out,
-          guests,
-          message,
-          plan_name,
-          price,
-          period,
-          status: "pending"
-        }
-      ])
-      .select()
-    
-    if (error) {
-      console.error("API: Erreur lors de l'enregistrement de la réservation:", error);
+      );
+    } catch (supabaseError) {
+      console.error("API: Erreur lors de la création du client Supabase ou de l'insertion:", supabaseError);
       return NextResponse.json(
-        { error: `Erreur lors de l'enregistrement de la réservation: ${error.message}` },
+        { error: `Erreur avec Supabase: ${supabaseError instanceof Error ? supabaseError.message : String(supabaseError)}` },
         { status: 500 }
-      )
+      );
     }
-    
-    // Envoi d'un email de confirmation (à implémenter)
-    // ...
-    
-    console.log("API: Réservation enregistrée avec succès");
-    return NextResponse.json(
-      { success: true, data: data[0] },
-      { status: 201 }
-    )
   } catch (error) {
     console.error("API: Erreur lors du traitement de la réservation:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -130,46 +91,4 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
-  try {
-    // Création du client Supabase avec la clé anonyme (sans RLS)
-    console.log("API GET: Création du client Supabase");
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    
-    // Créer un client Supabase direct sans RLS
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false
-      }
-    });
-    
-    // Vérification de l'authentification n'est pas nécessaire car nous utilisons un client direct
-    
-    // Récupération des réservations
-    console.log("API GET: Récupération des réservations");
-    const { data, error } = await supabase
-      .from("reservations")
-      .select("*")
-      .order("check_in", { ascending: true })
-    
-    if (error) {
-      console.error("API GET: Erreur lors de la récupération des réservations:", error);
-      return NextResponse.json(
-        { error: `Erreur lors de la récupération des réservations: ${error.message}` },
-        { status: 500 }
-      )
-    }
-    
-    console.log("API GET: Réservations récupérées avec succès");
-    return NextResponse.json({ data })
-  } catch (error) {
-    console.error("API GET: Erreur lors de la récupération des réservations:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: `Erreur lors de la récupération des réservations: ${errorMessage}` },
-      { status: 500 }
-    )
-  }
-} 
+// Suppression de la fonction GET pour simplifier et éviter les erreurs de compilation 

@@ -54,6 +54,19 @@ export function Header({ propertyName, logoUrl, className }: HeaderProps) {
   const handleNavClick = () => {
     setIsMobileMenuOpen(false);
   };
+  
+  // Empêcher le défilement du body quand le menu mobile est ouvert
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <header
@@ -88,12 +101,12 @@ export function Header({ propertyName, logoUrl, className }: HeaderProps) {
 
           {/* Bouton du menu mobile */}
           <button 
-            className={`md:hidden absolute right-4 p-2 rounded-full transition-all duration-300 ${
+            className={`md:hidden absolute right-4 p-3 rounded-full transition-all duration-300 z-[60] ${
               isMobileMenuOpen 
-                ? 'bg-white/20 backdrop-blur-sm text-white' 
+                ? 'bg-primary text-white shadow-lg' 
                 : !isScrolled 
-                  ? 'text-white hover:bg-white/10' 
-                  : 'text-foreground hover:bg-black/10'
+                  ? 'text-white hover:bg-white/20 backdrop-blur-sm' 
+                  : 'text-foreground hover:bg-black/20 backdrop-blur-sm'
             }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
@@ -102,45 +115,58 @@ export function Header({ propertyName, logoUrl, className }: HeaderProps) {
               animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMobileMenuOpen ? <X size={28} strokeWidth={2.5} /> : <Menu size={24} />}
             </motion.div>
           </button>
         </div>
       </div>
 
-      {/* Menu Mobile */}
+      {/* Menu Mobile - Overlay complet */}
       {isMobileMenuOpen && (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="md:hidden bg-black/70 backdrop-blur-md border-t border-border"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center md:hidden"
         >
-          <div className="container mx-auto px-4 py-6">
+          <div className="container mx-auto px-6 py-10 relative">
+            {/* Contenu du menu */}
             <motion.nav 
-              className="flex flex-col gap-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1, delayChildren: 0.1 }}
+              className="flex flex-col gap-6 items-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <NavLinks isScrolled={true} onClick={handleNavClick} />
+              <MobileNavLinks onClick={handleNavClick} />
+              
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.3 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
+                className="mt-6 w-full max-w-xs"
               >
                 <Link 
                   href={isLoggedIn ? "/admin" : "/auth"} 
-                  className="bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white px-4 py-2 rounded-md text-center transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 font-medium"
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white px-6 py-3 rounded-md text-center transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 font-medium w-full"
                   onClick={handleNavClick}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                   {isLoggedIn ? "Espace Admin" : "Espace Client"}
                 </Link>
+              </motion.div>
+              
+              {/* Bouton de fermeture en bas */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
+                className="mt-8 text-white/60 text-sm"
+              >
+                Appuyez sur X ou sur un lien pour fermer
               </motion.div>
             </motion.nav>
           </div>
@@ -150,7 +176,41 @@ export function Header({ propertyName, logoUrl, className }: HeaderProps) {
   );
 }
 
-// Composant pour les liens de navigation
+// Composant pour les liens de navigation mobile
+function MobileNavLinks({ onClick }: { onClick: () => void }) {
+  const links = [
+    { href: "#intro", text: "À propos" },
+    { href: "#gallery", text: "Galerie" },
+    { href: "#amenities", text: "Équipements" },
+    { href: "#location", text: "Emplacement" },
+    { href: "#pricing", text: "Tarifs" },
+    { href: "#contact", text: "Contact" }
+  ];
+  
+  return (
+    <>
+      {links.map((link, index) => (
+        <motion.div
+          key={link.href}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.1 }}
+          className="w-full max-w-xs"
+        >
+          <Link 
+            href={link.href} 
+            className="block w-full text-center py-4 text-white text-xl font-medium hover:text-primary transition-colors duration-200"
+            onClick={onClick}
+          >
+            {link.text}
+          </Link>
+        </motion.div>
+      ))}
+    </>
+  );
+}
+
+// Composant pour les liens de navigation desktop
 function NavLinks({ isScrolled, onClick }: { isScrolled: boolean, onClick: () => void }) {
   const linkClass = isScrolled 
     ? "text-white hover:text-primary-200 transition-colors drop-shadow-sm text-base md:text-lg font-medium" 

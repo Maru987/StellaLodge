@@ -85,6 +85,20 @@ export function Gallery({ property, className }: GalleryProps) {
     document.body.style.overflow = 'auto';
   };
 
+  // Gérer les touches du clavier pour fermer l'image avec Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedImage) {
+        closeLightbox();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedImage]);
+
   // Traduire les catégories en français
   const getCategoryLabel = (category: string) => {
     const translations: Record<string, string> = {
@@ -180,6 +194,7 @@ export function Gallery({ property, className }: GalleryProps) {
                     src={image.url}
                     alt={image.alt}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
@@ -201,12 +216,20 @@ export function Gallery({ property, className }: GalleryProps) {
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={closeLightbox}
         >
+          {/* Bouton de fermeture plus grand et plus visible */}
           <button 
-            className="absolute top-4 right-4 text-white p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+            className="absolute top-4 right-4 text-white p-3 rounded-full bg-black/70 hover:bg-primary transition-colors z-[60] border-2 border-white/30 hover:border-white"
             onClick={closeLightbox}
+            aria-label="Fermer l'image"
           >
-            <X size={24} />
+            <X size={28} strokeWidth={2.5} />
           </button>
+          
+          {/* Message d'aide pour fermer */}
+          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-black/70 px-4 py-2 rounded-full text-white text-sm opacity-70">
+            Cliquez n'importe où pour fermer
+          </div>
+          
           <div 
             className="relative max-w-5xl max-h-[90vh] w-full h-full"
             onClick={(e) => e.stopPropagation()}
@@ -215,8 +238,18 @@ export function Gallery({ property, className }: GalleryProps) {
               src={selectedImage.url}
               alt={selectedImage.alt}
               fill
+              sizes="100vw"
               className="object-contain"
             />
+            
+            {/* Bouton de fermeture supplémentaire en bas */}
+            <button 
+              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white px-6 py-2 rounded-full bg-primary hover:bg-primary/80 transition-colors mt-4"
+              onClick={closeLightbox}
+            >
+              Fermer
+            </button>
+            
             <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-4 text-white">
               <p className="font-medium">{selectedImage.alt}</p>
               <p className="text-sm opacity-80">{getCategoryLabel(selectedImage.category)}</p>
