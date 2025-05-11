@@ -75,6 +75,7 @@ export function Pricing({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
 
   // Fonction pour valider les dates en fonction du forfait
   const validateDateRange = (range: DateRange | undefined): boolean => {
@@ -341,121 +342,131 @@ export function Pricing({
                   </div>
                 </div>
               )}
-              
-              <div className="grid grid-cols-1 gap-3">
-                <div className="space-y-1">
-                  <Label htmlFor="name" className="text-sm">Nom complet</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    placeholder="Votre nom" 
-                    value={formData.name} 
-                    onChange={handleChange} 
-                    required 
-                    className="h-9 text-sm"
-                  />
+
+              {step === 1 && (
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="name" className="text-sm">Nom complet</Label>
+                    <Input 
+                      id="name" 
+                      name="name" 
+                      placeholder="Votre nom" 
+                      value={formData.name} 
+                      onChange={handleChange} 
+                      required 
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="email" className="text-sm">Email</Label>
+                    <Input 
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      placeholder="votre@email.com" 
+                      value={formData.email} 
+                      onChange={handleChange} 
+                      required 
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="phone" className="text-sm">Téléphone</Label>
+                    <Input 
+                      id="phone" 
+                      name="phone" 
+                      placeholder="Votre numéro de téléphone" 
+                      value={formData.phone} 
+                      onChange={handleChange} 
+                      required 
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="guests" className="text-sm">Nombre de personnes</Label>
+                    <Input 
+                      id="guests" 
+                      name="guests" 
+                      type="number" 
+                      min="1" 
+                      placeholder="Nombre de voyageurs" 
+                      value={formData.guests} 
+                      onChange={handleChange} 
+                      required 
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="message" className="text-sm">Autre chose à savoir ?</Label>
+                    <Textarea 
+                      id="message" 
+                      name="message" 
+                      placeholder="Informations complémentaires..." 
+                      value={formData.message} 
+                      onChange={handleChange} 
+                      className="min-h-[80px] text-sm"
+                    />
+                  </div>
+                  <Button type="button" className="w-full bg-blue-600 hover:bg-blue-700 h-9 text-sm" onClick={() => setStep(2)}>
+                    Suivant
+                  </Button>
                 </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="email" className="text-sm">Email</Label>
-                  <Input 
-                    id="email" 
-                    name="email" 
-                    type="email" 
-                    placeholder="votre@email.com" 
-                    value={formData.email} 
-                    onChange={handleChange} 
-                    required 
-                    className="h-9 text-sm"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="phone" className="text-sm">Téléphone</Label>
-                  <Input 
-                    id="phone" 
-                    name="phone" 
-                    placeholder="Votre numéro de téléphone" 
-                    value={formData.phone} 
-                    onChange={handleChange} 
-                    required 
-                    className="h-9 text-sm"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="dateRange" className="text-sm">Dates du séjour</Label>
-                  <DatePickerWithRange
-                    date={dateRange}
-                    onSelect={handleDateSelect}
-                  />
-                  {dateError && (
-                    <div className="flex flex-col space-y-2">
-                      <p className="text-xs text-red-600 mt-1">{dateError}</p>
-                      <button 
-                        type="button" 
-                        onClick={suggestDateRange}
-                        className="text-xs text-blue-600 underline self-start"
-                      >
-                        Suggérer des dates valides
-                      </button>
+              )}
+
+              {step === 2 && (
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="space-y-1 flex flex-col items-center w-full">
+                    <Label htmlFor="dateRange" className="text-sm mb-2 text-center w-full">Dates du séjour</Label>
+                    <div className="w-full flex justify-center items-center">
+                      <div className="w-[340px] mx-auto">
+                        <CalendarComponent
+                          mode="range"
+                          selected={dateRange}
+                          onSelect={handleDateSelect}
+                          numberOfMonths={1}
+                          locale={fr}
+                          className="text-base"
+                          fromDate={new Date()}
+                        />
+                      </div>
                     </div>
-                  )}
-                  {selectedPlan && !dateError && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      {selectedPlan.name === "JOURNALIER" && "Sélectionnez 1 nuit"}
-                      {selectedPlan.name === "2 à 5 NUITS" && "Sélectionnez entre 2 et 5 nuits"}
-                      {selectedPlan.name === "HEBDOMADAIRE" && "Sélectionnez entre 7 et 29 nuits"}
-                      {selectedPlan.name === "MENSUEL" && "Sélectionnez 30 nuits ou plus"}
-                    </p>
-                  )}
+                    {dateError && (
+                      <div className="flex flex-col items-center space-y-2 mt-2 w-full">
+                        <p className="text-xs text-red-600 mt-1 text-center w-full">{dateError}</p>
+                        <button 
+                          type="button" 
+                          onClick={suggestDateRange}
+                          className="text-xs text-blue-600 underline text-center w-full"
+                        >
+                          Suggérer des dates valides
+                        </button>
+                      </div>
+                    )}
+                    {selectedPlan && !dateError && (
+                      <p className="text-xs text-blue-600 mt-2 text-center w-full">
+                        {selectedPlan.name === "JOURNALIER" && "Sélectionnez 1 nuit"}
+                        {selectedPlan.name === "2 à 5 NUITS" && "Sélectionnez entre 2 et 5 nuits"}
+                        {selectedPlan.name === "HEBDOMADAIRE" && "Sélectionnez entre 7 et 29 nuits"}
+                        {selectedPlan.name === "MENSUEL" && "Sélectionnez 30 nuits ou plus"}
+                      </p>
+                    )}
+                  </div>
+                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-9 text-sm mt-4" disabled={!dateRange || isSubmitting}>
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Envoi en cours...
+                      </span>
+                    ) : "Confirmer"}
+                  </Button>
+                  <Button type="button" variant="outline" className="w-full h-9 text-sm mt-2" onClick={() => setStep(1)}>
+                    Retour
+                  </Button>
                 </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="guests" className="text-sm">Nombre de personnes</Label>
-                  <Input 
-                    id="guests" 
-                    name="guests" 
-                    type="number" 
-                    min="1" 
-                    placeholder="Nombre de voyageurs" 
-                    value={formData.guests} 
-                    onChange={handleChange} 
-                    required 
-                    className="h-9 text-sm"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="message" className="text-sm">Autre chose à savoir ?</Label>
-                  <Textarea 
-                    id="message" 
-                    name="message" 
-                    placeholder="Informations complémentaires..." 
-                    value={formData.message} 
-                    onChange={handleChange} 
-                    className="min-h-[80px] text-sm"
-                  />
-                </div>
-              </div>
-              
-              <DialogFooter className="mt-4">
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 h-9 text-sm"
-                  disabled={!dateRange || isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Envoi en cours...
-                    </span>
-                  ) : "Envoyer ma demande"}
-                </Button>
-              </DialogFooter>
+              )}
             </form>
           )}
         </DialogContent>
