@@ -58,6 +58,16 @@ export function Contact({ property, className }: ContactProps) {
                   >
                     {contactEmail}
                   </a>
+                  <div className="mt-6 flex flex-col items-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 text-green-600">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 11.25 8.284 11.25 0M8.25 6.75a2.25 2.25 0 114.5 0v.75a2.25 2.25 0 01-4.5 0v-.75z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 2.25h10.5a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5v-15A2.25 2.25 0 016.75 2.25z" />
+                      </svg>
+                    </div>
+                    <p className="font-medium mb-1 text-black">Téléphone</p>
+                    <a href="tel:87306279" className="text-gray-700 hover:text-green-600 transition-colors text-lg font-semibold">87306279</a>
+                  </div>
                 </div>
               )}
             </div>
