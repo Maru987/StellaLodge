@@ -4,7 +4,7 @@ import { Property } from '@/types/property';
 export const propertyData: Property = {
   id: 'stella-lodge-tahiti',
   name: 'Stella Lodge Tahiti',
-  tagline: 'Un paradis tropical au cœur de la Polynésie française',
+  tagline: 'Un Lodge chaleureux au cœur de Tahiti',
   description: 'Bienvenue dans notre maison simple et confortable, idéalement située au cœur de Papeete. Notre Fare Tahitien vous offre un havre de paix où règnent tranquillité et sérénité, tout en bénéficiant d\'une localisation privilégiée au centre-ville. Vous apprécierez la proximité immédiate des commerces, restaurants et attractions culturelles, tout en profitant d\'un environnement calme et reposant. Notre équipe vous accueillera chaleureusement et sera à votre disposition pour rendre votre séjour inoubliable. Que vous soyez en voyage d\'affaires ou en quête de découverte de l\'île, Stella Lodge est le point de départ idéal pour toutes vos aventures tahitiennes.',
   heroImage: '/images/Terrasse 2.jpg',
   logo: '/logo.svg',

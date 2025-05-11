@@ -90,15 +90,22 @@ export function Pricing({
     // Validation selon le forfait
     switch (selectedPlan.name) {
       case "JOURNALIER":
-        // Pour le forfait journalier, on ne peut réserver qu'une seule nuit
+        // Pour le forfait journalier, on peut réserver une seule nuit
         if (diffDays !== 1) {
           setDateError("Le forfait journalier permet de réserver une seule nuit.");
+          return false;
+        }
+        // Vérifier que la date de départ est le lendemain de la date d'arrivée
+        const nextDay = new Date(from);
+        nextDay.setDate(nextDay.getDate() + 1);
+        if (to.getTime() !== nextDay.getTime()) {
+          setDateError("Pour le forfait journalier, la date de départ doit être le lendemain de la date d'arrivée.");
           return false;
         }
         break;
       case "2 NUITS":
         // Pour le forfait 2 nuits, on peut réserver entre 2 et 6 nuits
-        if (diffDays < 2 || diffDays >= 7) {
+        if (diffDays < 2 || diffDays > 6) {
           setDateError("Le forfait 2 nuits permet de réserver entre 2 et 6 nuits.");
           return false;
         }
@@ -120,12 +127,28 @@ export function Pricing({
 
   // Fonction pour gérer la sélection de dates
   const handleDateSelect = (range: DateRange | undefined) => {
-    setDateRange(range);
-    if (range && range.from && range.to) {
-      validateDateRange(range);
-    } else {
+    if (!range || !range.from || !selectedPlan) {
+      setDateRange(range);
       setDateError(null);
+      return;
     }
+
+    // Si l'utilisateur clique sur la même date que la sélection actuelle, on réinitialise
+    if (dateRange && dateRange.from && range.from.getTime() === dateRange.from.getTime()) {
+      setDateRange(undefined);
+      setDateError(null);
+      return;
+    }
+
+    let nights = 1;
+    if (selectedPlan.name === "2 NUITS") nights = 2;
+    if (selectedPlan.name === "HEBDOMADAIRE") nights = 7;
+
+    const from = new Date(range.from);
+    const to = new Date(from);
+    to.setDate(from.getDate() + nights);
+    setDateRange({ from, to });
+    validateDateRange({ from, to });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -148,6 +171,33 @@ export function Pricing({
     if (!dateRange?.from || !dateRange?.to) {
       setSubmitError("Veuillez sélectionner les dates de séjour");
       return;
+    }
+
+    // Validation des dates selon le forfait
+    const from = new Date(dateRange.from);
+    const to = new Date(dateRange.to);
+    const diffTime = Math.abs(to.getTime() - from.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    switch (selectedPlan.name) {
+      case "JOURNALIER":
+        if (diffDays !== 1) {
+          setSubmitError("Le forfait journalier permet de réserver une seule nuit");
+          return;
+        }
+        break;
+      case "2 NUITS":
+        if (diffDays < 2 || diffDays > 6) {
+          setSubmitError("Le forfait 2 nuits permet de réserver entre 2 et 6 nuits");
+          return;
+        }
+        break;
+      case "HEBDOMADAIRE":
+        if (diffDays < 7) {
+          setSubmitError("Le forfait hebdomadaire permet de réserver 7 nuits ou plus");
+          return;
+        }
+        break;
     }
     
     // Validation des champs obligatoires
@@ -200,11 +250,10 @@ export function Pricing({
           setSubmitSuccess(false);
         }, 2000);
       } else {
-        // Gestion générique de l'erreur
-        setSubmitError(`Erreur lors de l'enregistrement. Veuillez réessayer.`);
+        setSubmitError("Une erreur est survenue lors de l'enregistrement de votre réservation. Veuillez réessayer.");
       }
     } catch (error) {
-      setSubmitError(`Erreur inattendue: ${error instanceof Error ? error.message : String(error)}`);
+      setSubmitError("Une erreur inattendue est survenue. Veuillez réessayer plus tard.");
     } finally {
       setIsSubmitting(false);
     }
@@ -561,11 +610,23 @@ export function Pricing({
           <ul className="space-y-2 ml-6">
             <li className="flex items-start gap-2">
               <span className="text-amber-800 font-bold">•</span>
-              <span className="text-amber-800 text-sm">Dépôt de garantie : 10 000 XPF (remboursable à la fin du séjour en l'absence de dégradation ou perte)</span>
+              <span className="text-amber-800 text-sm">Dépôt de garantie en fonction du séjour (remboursable à la fin du séjour en l'absence de dégradation ou perte) </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-800 font-bold">•</span>
               <span className="text-amber-800 text-sm">La réservation est confirmée uniquement après réception de l'acompte</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-800 font-bold">•</span>
+              <span className="text-amber-800 text-sm">Le logement est strictement non-fumeur</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-800 font-bold">•</span>
+              <span className="text-amber-800 text-sm">Les animaux ne sont pas acceptés</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-800 font-bold">•</span>
+              <span className="text-amber-800 text-sm">Le logement ne convient pas aux personnes à mobilité réduite</span>
             </li>
           </ul>
         </motion.div>

@@ -51,18 +51,25 @@ export function Hero({ property, className }: HeroProps) {
         setIsVideoLoaded(false);
       };
 
+      // Événement pour détecter quand la vidéo est prête
+      const handleCanPlay = () => {
+        console.log("La vidéo peut être lue");
+        if (videoRef.current) {
+          videoRef.current.play().catch(handleError);
+        }
+      };
+
       // Ajouter les écouteurs d'événements
       videoRef.current.addEventListener('loadeddata', handleLoadedData);
       videoRef.current.addEventListener('error', handleError);
-
-      // Tenter de lire la vidéo
-      videoRef.current.play().catch(handleError);
+      videoRef.current.addEventListener('canplay', handleCanPlay);
 
       // Nettoyage des écouteurs d'événements
       return () => {
         if (videoRef.current) {
           videoRef.current.removeEventListener('loadeddata', handleLoadedData);
           videoRef.current.removeEventListener('error', handleError);
+          videoRef.current.removeEventListener('canplay', handleCanPlay);
         }
       };
     }
@@ -98,10 +105,12 @@ export function Hero({ property, className }: HeroProps) {
             loop
             playsInline
             controls={false}
-            preload="auto"
+            preload="metadata"
             className="absolute inset-0 w-full h-full object-cover"
-            src="/IMG_E0320.MP4"
+            poster="/images/Terrasse.jpg"
           >
+            <source src="/IMG_E0320.MP4" type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
+            <source src="/IMG_E0320.MP4" type="video/mp4" />
             Votre navigateur ne prend pas en charge la lecture de vidéos.
           </video>
         )}
