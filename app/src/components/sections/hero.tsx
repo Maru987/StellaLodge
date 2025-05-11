@@ -38,40 +38,20 @@ export function Hero({ property, className }: HeroProps) {
 
   // Effet pour gérer la lecture automatique de la vidéo
   useEffect(() => {
-    if (videoRef.current && !isMobile) {
-      // Événement pour détecter quand la vidéo est chargée
-      const handleLoadedData = () => {
-        console.log("Vidéo chargée avec succès");
-        setIsVideoLoaded(true);
-      };
+    if (!videoRef.current) return;
+    // Appliquer uniquement sur desktop
+    if (isMobile) return;
 
-      // Événement pour gérer les erreurs de lecture
-      const handleError = (error: any) => {
-        console.error("Erreur de lecture de la vidéo:", error);
-        setIsVideoLoaded(false);
-      };
-
-      // Événement pour détecter quand la vidéo est prête
-      const handleCanPlay = () => {
-        console.log("La vidéo peut être lue");
-        if (videoRef.current) {
-          videoRef.current.play().catch(handleError);
-        }
-      };
-
-      // Ajouter les écouteurs d'événements
-      videoRef.current.addEventListener('loadeddata', handleLoadedData);
-      videoRef.current.addEventListener('error', handleError);
-      videoRef.current.addEventListener('canplay', handleCanPlay);
-
-      // Nettoyage des écouteurs d'événements
-      return () => {
-        if (videoRef.current) {
-          videoRef.current.removeEventListener('loadeddata', handleLoadedData);
-          videoRef.current.removeEventListener('error', handleError);
-          videoRef.current.removeEventListener('canplay', handleCanPlay);
-        }
-      };
+    const video = videoRef.current;
+    // Essayer de lancer la lecture automatiquement
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // La lecture a démarré automatiquement
+      }).catch((error) => {
+        // La lecture automatique a échoué (restriction navigateur)
+        // On ne fait rien, le poster reste affiché
+      });
     }
   }, [isMobile]);
 
@@ -105,16 +85,16 @@ export function Hero({ property, className }: HeroProps) {
             loop
             playsInline
             controls={false}
-            preload="metadata"
+            preload="auto"
             className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'none' }}
             poster="/images/Terrasse.jpg"
           >
-            <source src="/IMG_E0320.MP4" type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
-            <source src="/IMG_E0320.MP4" type="video/mp4" />
+            <source src="/IMG_E0320_converted_v3.mp4" type="video/mp4" />
+            <source src="/IMG_E0320_converted_v3.mp4" type="video/mp4" />
             Votre navigateur ne prend pas en charge la lecture de vidéos.
           </video>
         )}
-        <div className="absolute inset-0 bg-black/40" />
       </div>
 
       {/* Contenu */}

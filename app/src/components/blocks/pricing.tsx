@@ -95,18 +95,11 @@ export function Pricing({
           setDateError("Le forfait journalier permet de réserver une seule nuit.");
           return false;
         }
-        // Vérifier que la date de départ est le lendemain de la date d'arrivée
-        const nextDay = new Date(from);
-        nextDay.setDate(nextDay.getDate() + 1);
-        if (to.getTime() !== nextDay.getTime()) {
-          setDateError("Pour le forfait journalier, la date de départ doit être le lendemain de la date d'arrivée.");
-          return false;
-        }
         break;
-      case "2 NUITS":
-        // Pour le forfait 2 nuits, on peut réserver entre 2 et 6 nuits
-        if (diffDays < 2 || diffDays > 6) {
-          setDateError("Le forfait 2 nuits permet de réserver entre 2 et 6 nuits.");
+      case "2 à 5 NUITS":
+        // Pour le forfait 2 à 5 nuits, on peut réserver entre 2 et 5 nuits
+        if (diffDays < 2 || diffDays > 5) {
+          setDateError("Le forfait 2 à 5 nuits permet de réserver entre 2 et 5 nuits.");
           return false;
         }
         break;
@@ -133,22 +126,19 @@ export function Pricing({
       return;
     }
 
-    // Si l'utilisateur clique sur la même date que la sélection actuelle, on réinitialise
-    if (dateRange && dateRange.from && range.from.getTime() === dateRange.from.getTime()) {
-      setDateRange(undefined);
-      setDateError(null);
+    // Pour le forfait journalier, on force une nuit
+    if (selectedPlan.name === "JOURNALIER") {
+      const from = new Date(range.from);
+      const to = new Date(from);
+      to.setDate(from.getDate() + 1);
+      setDateRange({ from, to });
+      validateDateRange({ from, to });
       return;
     }
 
-    let nights = 1;
-    if (selectedPlan.name === "2 NUITS") nights = 2;
-    if (selectedPlan.name === "HEBDOMADAIRE") nights = 7;
-
-    const from = new Date(range.from);
-    const to = new Date(from);
-    to.setDate(from.getDate() + nights);
-    setDateRange({ from, to });
-    validateDateRange({ from, to });
+    // Pour les autres forfaits, on laisse l'utilisateur choisir
+    setDateRange(range);
+    validateDateRange(range);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -186,9 +176,9 @@ export function Pricing({
           return;
         }
         break;
-      case "2 NUITS":
-        if (diffDays < 2 || diffDays > 6) {
-          setSubmitError("Le forfait 2 nuits permet de réserver entre 2 et 6 nuits");
+      case "2 à 5 NUITS":
+        if (diffDays < 2 || diffDays > 5) {
+          setSubmitError("Le forfait 2 à 5 nuits permet de réserver entre 2 et 5 nuits");
           return;
         }
         break;
@@ -414,7 +404,7 @@ export function Pricing({
                   {selectedPlan && !dateError && (
                     <p className="text-xs text-blue-600 mt-1">
                       {selectedPlan.name === "JOURNALIER" && "Sélectionnez 1 nuit"}
-                      {selectedPlan.name === "2 NUITS" && "Sélectionnez entre 2 et 6 nuits"}
+                      {selectedPlan.name === "2 à 5 NUITS" && "Sélectionnez entre 2 et 5 nuits"}
                       {selectedPlan.name === "HEBDOMADAIRE" && "Sélectionnez entre 7 et 29 nuits"}
                       {selectedPlan.name === "MENSUEL" && "Sélectionnez 30 nuits ou plus"}
                     </p>

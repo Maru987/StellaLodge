@@ -29,6 +29,7 @@ export function DatePickerWithRange({
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const [reservedDates, setReservedDates] = React.useState<DateRange[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
+  const [open, setOpen] = React.useState(false)
   const today = startOfToday();
   
   // Charger les réservations confirmées
@@ -102,9 +103,17 @@ export function DatePickerWithRange({
   // Dates passées pour le style (séparées des dates réservées)
   const pastDays = { before: today };
 
+  // Fermer le popover uniquement si la plage est complète (from + to)
+  const handleSelect = (range: DateRange | undefined) => {
+    onSelect(range);
+    if (range && range.from && range.to) {
+      setOpen(false);
+    }
+  };
+
   return (
     <div className="grid gap-2">
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id="date"
@@ -113,6 +122,7 @@ export function DatePickerWithRange({
               "w-full justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
+            onClick={() => setOpen(true)}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date?.from ? (
@@ -149,7 +159,7 @@ export function DatePickerWithRange({
               mode="range"
               defaultMonth={date?.from || today}
               selected={date}
-              onSelect={onSelect}
+              onSelect={handleSelect}
               numberOfMonths={isDesktop ? 2 : 1}
               locale={fr}
               className="max-w-[100vw] md:max-w-none"

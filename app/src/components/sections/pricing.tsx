@@ -25,14 +25,14 @@ export function Pricing({ property, className }: PricingProps) {
   // Définir les plans de tarification
   const pricingPlans = [
     {
-      name: "JOURNALIER",
+      name: "NUITÉ",
       price: "15000",
       yearlyPrice: "12000",
       period: "par nuit",
       features: [
         "Accès à toutes les commodités",
         "Support 24/7",
-        "Check-in flexible",
+        "Check-in à 15h",
       ],
       description: "Parfait pour des courts séjours",
       buttonText: "Réserver maintenant",
@@ -40,14 +40,15 @@ export function Pricing({ property, className }: PricingProps) {
       isPopular: false,
     },
     {
-      name: "2 NUITS",
+      name: "2 À 5 NUITS",
       price: "13500",
       yearlyPrice: "10800",
       period: "par nuit",
       features: [
         "Accès à toutes les commodités",
         "Support 24/7",
-        "Check-in flexible",
+        "Check-in à 15h",
+        "Économisez 10% par rapport à la nuitée",
       ],
       description: "Économisez 3 000 XPF pour un séjour de 2 nuits par rapport au tarif journalier (15 000 XPF/nuit)",
       buttonText: "Réserver maintenant",
@@ -55,14 +56,15 @@ export function Pricing({ property, className }: PricingProps) {
       isPopular: false,
     },
     {
-      name: "HEBDOMADAIRE",
+      name: "LA SEMAINE",
       price: "12000",
       yearlyPrice: "9600",
       period: "par nuit",
       features: [
         "Accès à toutes les commodités",
         "Support 24/7",
-        "Check-in flexible",
+        "Check-in à 15h",
+        "Économisez 20% par rapport à la nuitée",
       ],
       description: "Économisez 21 000 XPF par semaine par rapport au tarif journalier (15 000 XPF/nuit)",
       buttonText: "Réserver maintenant",
