@@ -80,14 +80,16 @@ export default function AdminPage() {
     from: new Date(),
     to: addDays(new Date(), 1),
   })
+  const [reservationStep, setReservationStep] = useState<'info' | 'dates'>('info')
   const [newReservation, setNewReservation] = useState({
     name: "",
     email: "",
     phone: "",
     guests: 1,
     message: "",
-    plan_name: "Standard",
+    plan_name: "1 nuit",
     price: 25000,
+    period: "1 nuit"
   })
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
@@ -306,6 +308,21 @@ export default function AdminPage() {
 
   const handleAddReservation = async () => {
     try {
+      if (!dateRange?.from || !dateRange?.to) {
+        alert("Veuillez sélectionner les dates de séjour");
+        return;
+      }
+      
+      if (!newReservation.name || !newReservation.email || !newReservation.phone) {
+        alert("Veuillez remplir tous les champs obligatoires");
+        return;
+      }
+      
+      if (newReservation.price <= 0) {
+        alert("Veuillez saisir un prix valide");
+        return;
+      }
+
       const { data, error } = await supabase
         .from('reservations')
         .insert([
@@ -313,13 +330,14 @@ export default function AdminPage() {
             name: newReservation.name,
             email: newReservation.email,
             phone: newReservation.phone,
-            check_in: dateRange.from,
-            check_out: dateRange.to,
+            check_in: dateRange.from.toISOString().split('T')[0],
+            check_out: dateRange.to.toISOString().split('T')[0],
             guests: newReservation.guests,
             message: newReservation.message,
             status: "confirmed",
             plan_name: newReservation.plan_name,
             price: newReservation.price,
+            period: newReservation.period
           }
         ])
         .select()
@@ -329,6 +347,9 @@ export default function AdminPage() {
       // Mettre à jour l'état local
       fetchReservations()
       
+      // Afficher un message de succès
+      alert(`Réservation créée avec succès pour ${newReservation.name} - ${newReservation.price.toLocaleString()} XPF`)
+      
       // Réinitialiser le formulaire
       setNewReservation({
         name: "",
@@ -336,15 +357,17 @@ export default function AdminPage() {
         phone: "",
         guests: 1,
         message: "",
-        plan_name: "Standard",
+        plan_name: "1 nuit",
         price: 25000,
+        period: "1 nuit"
       })
       setDateRange({
         from: new Date(),
         to: addDays(new Date(), 1),
       })
       
-      // Fermer le dialogue
+      // Réinitialiser l'étape et fermer le dialogue
+      setReservationStep('info')
       setIsAddReservationOpen(false)
     } catch (error) {
       console.error("Erreur lors de l'ajout de la réservation:", error)
@@ -574,6 +597,31 @@ export default function AdminPage() {
   };
 
   // Fonction pour exécuter les commandes SQL pour configurer les politiques de sécurité
+  // Fonction pour calculer les revenus par période
+  const calculateRevenueByPeriod = (period: 'month' | 'quarter' | 'year') => {
+    const now = new Date();
+    const confirmedReservations = reservations.filter(r => r.status === 'confirmed');
+    
+    return confirmedReservations.reduce((sum, res) => {
+      const reservationDate = new Date(res.created_at);
+      
+      let isInPeriod = false;
+      if (period === 'month') {
+        isInPeriod = reservationDate.getMonth() === now.getMonth() && 
+                    reservationDate.getFullYear() === now.getFullYear();
+      } else if (period === 'quarter') {
+        const quarter = Math.floor(now.getMonth() / 3);
+        const reservationQuarter = Math.floor(reservationDate.getMonth() / 3);
+        isInPeriod = reservationQuarter === quarter && 
+                    reservationDate.getFullYear() === now.getFullYear();
+      } else if (period === 'year') {
+        isInPeriod = reservationDate.getFullYear() === now.getFullYear();
+      }
+      
+      return isInPeriod ? sum + res.price : sum;
+    }, 0);
+  };
+
   const setupStoragePolicies = async () => {
     try {
       console.log("Configuration des politiques de sécurité pour le stockage...");
@@ -787,43 +835,39 @@ export default function AdminPage() {
                     <DialogHeader>
                       <DialogTitle>Ajouter une réservation</DialogTitle>
                       <DialogDescription>
-                        Remplissez les informations pour créer une nouvelle réservation.
+                        {reservationStep === 'info' 
+                          ? "Remplissez les informations du client."
+                          : "Sélectionnez les dates du séjour."}
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="dates">Dates du séjour</Label>
-                        <DatePickerWithRange 
-                          date={dateRange}
-                          onSelect={(range: DateRange | undefined) => range && setDateRange(range)}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="name">Nom complet</Label>
-                        <Input
-                          id="name"
-                          value={newReservation.name}
-                          onChange={(e) => setNewReservation({...newReservation, name: e.target.value})}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={newReservation.email}
-                          onChange={(e) => setNewReservation({...newReservation, email: e.target.value})}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="phone">Téléphone</Label>
-                        <Input
-                          id="phone"
-                          value={newReservation.phone}
-                          onChange={(e) => setNewReservation({...newReservation, phone: e.target.value})}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                    
+                    {reservationStep === 'info' ? (
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="name">Nom complet</Label>
+                          <Input
+                            id="name"
+                            value={newReservation.name}
+                            onChange={(e) => setNewReservation({...newReservation, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={newReservation.email}
+                            onChange={(e) => setNewReservation({...newReservation, email: e.target.value})}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="phone">Téléphone</Label>
+                          <Input
+                            id="phone"
+                            value={newReservation.phone}
+                            onChange={(e) => setNewReservation({...newReservation, phone: e.target.value})}
+                          />
+                        </div>
                         <div className="grid gap-2">
                           <Label htmlFor="guests">Nombre d'invités</Label>
                           <Input
@@ -835,42 +879,115 @@ export default function AdminPage() {
                           />
                         </div>
                         <div className="grid gap-2">
-                          <Label htmlFor="plan">Plan tarifaire</Label>
-                          <select
-                            id="plan"
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
-                            value={newReservation.plan_name}
-                            onChange={(e) => {
-                              const price = e.target.value === "Premium" ? 35000 : 25000;
-                              setNewReservation({
-                                ...newReservation, 
-                                plan_name: e.target.value,
-                                price: price
-                              });
-                            }}
-                          >
-                            <option value="Standard">Standard - 25,000 FCFA</option>
-                            <option value="Premium">Premium - 35,000 FCFA</option>
-                          </select>
+                          <Label htmlFor="message">Message (optionnel)</Label>
+                          <Textarea
+                            id="message"
+                            value={newReservation.message}
+                            onChange={(e) => setNewReservation({...newReservation, message: e.target.value})}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <Button variant="outline" onClick={() => setIsAddReservationOpen(false)}>
+                            Annuler
+                          </Button>
+                          <Button onClick={() => setReservationStep('dates')}>
+                            Suivant
+                          </Button>
                         </div>
                       </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="message">Message (optionnel)</Label>
-                        <Textarea
-                          id="message"
-                          value={newReservation.message}
-                          onChange={(e) => setNewReservation({...newReservation, message: e.target.value})}
-                        />
+                    ) : (
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="dates">Dates du séjour</Label>
+                          <DatePickerWithRange 
+                            date={dateRange}
+                            onSelect={(range: DateRange | undefined) => {
+                              if (range && range.from && range.to) {
+                                setDateRange(range);
+                                // Calculer la durée du séjour
+                                const nights = Math.ceil((range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24));
+                                
+                                // Déterminer le plan tarifaire suggéré en fonction de la durée
+                                let suggestedPlanName, suggestedPrice;
+                                if (nights === 1) {
+                                  suggestedPlanName = "1 nuit";
+                                  suggestedPrice = 15000;
+                                } else if (nights >= 2 && nights <= 5) {
+                                  suggestedPlanName = "2-5 nuits";
+                                  suggestedPrice = 13500 * nights;
+                                } else if (nights >= 7 && nights < 30) {
+                                  suggestedPlanName = "1 semaine";
+                                  suggestedPrice = 12000 * nights;
+                                } else {
+                                  suggestedPlanName = "Séjour prolongé";
+                                  suggestedPrice = 10000 * nights;
+                                }
+                                
+                                // Mettre à jour avec les suggestions (l'admin peut les modifier)
+                                setNewReservation({
+                                  ...newReservation,
+                                  plan_name: suggestedPlanName,
+                                  price: suggestedPrice,
+                                  period: `${nights} nuit${nights > 1 ? 's' : ''}`
+                                });
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Plan tarifaire suggéré</Label>
+                          <div className="p-3 bg-gray-50 rounded-md">
+                            <p className="font-medium">{newReservation.plan_name}</p>
+                            <p className="text-sm text-gray-600">{newReservation.price.toLocaleString()} XPF</p>
+                            {dateRange?.from && dateRange?.to && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Durée: {Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))} nuit{Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)) > 1 ? 's' : ''}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="grid gap-2">
+                          <Label htmlFor="custom-price">Prix personnalisé (XPF)</Label>
+                          <Input
+                            id="custom-price"
+                            type="number"
+                            min="0"
+                            step="1000"
+                            value={newReservation.price}
+                            onChange={(e) => setNewReservation({
+                              ...newReservation,
+                              price: parseInt(e.target.value) || 0
+                            })}
+                            placeholder="Entrez le prix souhaité"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Vous pouvez modifier le prix suggéré selon vos besoins
+                          </p>
+                        </div>
+                        
+                        <div className="grid gap-2">
+                          <Label htmlFor="custom-plan">Nom du plan personnalisé</Label>
+                          <Input
+                            id="custom-plan"
+                            value={newReservation.plan_name}
+                            onChange={(e) => setNewReservation({
+                              ...newReservation,
+                              plan_name: e.target.value
+                            })}
+                            placeholder="ex: Séjour spécial, Réservation directe, etc."
+                          />
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <Button variant="outline" onClick={() => setReservationStep('info')}>
+                            Retour
+                          </Button>
+                          <Button onClick={handleAddReservation}>
+                            Confirmer la réservation
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex justify-end gap-3">
-                      <Button variant="outline" onClick={() => setIsAddReservationOpen(false)}>
-                        Annuler
-                      </Button>
-                      <Button onClick={handleAddReservation}>
-                        Ajouter la réservation
-                      </Button>
-                    </div>
+                    )}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -978,7 +1095,7 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <p className="text-xs sm:text-sm font-medium text-gray-500">Plan tarifaire</p>
-                          <p>{selectedReservation.plan_name} - {selectedReservation.price.toLocaleString()} FCFA</p>
+                          <p>{selectedReservation.plan_name} - {selectedReservation.price.toLocaleString()} XPF</p>
                         </div>
                         {selectedReservation.message && (
                           <div>
@@ -1215,7 +1332,7 @@ export default function AdminPage() {
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Prix</p>
-                            <p className="font-medium">{selectedReservation.price.toLocaleString()} FCFA</p>
+                            <p className="font-medium">{selectedReservation.price.toLocaleString()} XPF</p>
                           </div>
                         </div>
                         
@@ -1310,39 +1427,55 @@ export default function AdminPage() {
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Revenus totaux</p>
                 <p className="text-xl sm:text-2xl font-bold">{(reservations.reduce((sum, res) => {
                   if (res.status === 'cancelled') return sum;
-                  const checkIn = new Date(res.check_in);
-                  const checkOut = new Date(res.check_out);
-                  const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-                  return sum + (res.price * nights);
-                }, 0)).toLocaleString()} FCFA</p>
-                <p className="text-xs text-green-600 mt-1 sm:mt-2">+15% par rapport au mois dernier</p>
+                  return sum + res.price;
+                }, 0)).toLocaleString()} XPF</p>
+                <p className="text-xs text-green-600 mt-1 sm:mt-2">
+                  {calculateRevenueByPeriod('month').toLocaleString()} XPF ce mois
+                </p>
               </div>
               
               <div className="bg-white rounded-lg shadow p-3 sm:p-4">
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Réservations confirmées</p>
                 <p className="text-xl sm:text-2xl font-bold">{reservations.filter(res => res.status === 'confirmed').length}</p>
-                <p className="text-xs text-green-600 mt-1 sm:mt-2">+3 par rapport au mois dernier</p>
+                <p className="text-xs text-green-600 mt-1 sm:mt-2">
+                  {reservations.filter(res => res.status === 'confirmed').length > 0 ? 
+                    `${Math.round((reservations.filter(res => res.status === 'confirmed').length / reservations.length) * 100)}% du total` : 
+                    'Aucune réservation confirmée'
+                  }
+                </p>
               </div>
               
               <div className="bg-white rounded-lg shadow p-3 sm:p-4">
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Taux d'occupation</p>
-                <p className="text-xl sm:text-2xl font-bold">78%</p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {(() => {
+                    const totalNights = reservations.reduce((sum, res) => {
+                      if (res.status === 'cancelled') return sum;
+                      const checkIn = new Date(res.check_in);
+                      const checkOut = new Date(res.check_out);
+                      const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+                      return sum + nights;
+                    }, 0);
+                    
+                    // Calculer le taux d'occupation (supposons 30 jours par mois)
+                    const daysInMonth = 30;
+                    const occupancyRate = Math.round((totalNights / daysInMonth) * 100);
+                    return Math.min(occupancyRate, 100);
+                  })()}%
+                </p>
                 <p className="text-xs text-yellow-600 mt-1 sm:mt-2">-2% par rapport au mois dernier</p>
               </div>
               
               <div className="bg-white rounded-lg shadow p-3 sm:p-4">
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Revenu moyen par réservation</p>
                 <p className="text-xl sm:text-2xl font-bold">
-                  {reservations.length > 0 
+                  {reservations.filter(res => res.status !== 'cancelled').length > 0 
                     ? Math.round(reservations.reduce((sum, res) => {
                         if (res.status === 'cancelled') return sum;
-                        const checkIn = new Date(res.check_in);
-                        const checkOut = new Date(res.check_out);
-                        const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-                        return sum + (res.price * nights);
+                        return sum + res.price;
                       }, 0) / 
                         reservations.filter(res => res.status !== 'cancelled').length).toLocaleString() 
-                    : 0} FCFA
+                    : 0} XPF
                 </p>
                 <p className="text-xs text-yellow-600 mt-1 sm:mt-2">+5% par rapport au mois dernier</p>
               </div>
@@ -1384,7 +1517,7 @@ export default function AdminPage() {
                           const checkIn = new Date(reservation.check_in);
                           const checkOut = new Date(reservation.check_out);
                           const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-                          const totalAmount = reservation.price * nights;
+                          const totalAmount = reservation.price; // Le prix est déjà le total
                           
                           return (
                             <tr key={reservation.id} className="hover:bg-gray-50">
@@ -1403,7 +1536,7 @@ export default function AdminPage() {
                                 {nights} nuit{nights > 1 ? 's' : ''}
                               </td>
                               <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
-                                {totalAmount.toLocaleString()} FCFA
+                                {totalAmount.toLocaleString()} XPF
                               </td>
                             </tr>
                           );
@@ -1426,10 +1559,7 @@ export default function AdminPage() {
                     {Array.from(new Set(reservations.map(r => r.plan_name))).map(planName => {
                       const planReservations = reservations.filter(r => r.plan_name === planName && r.status !== 'cancelled');
                       const totalAmount = planReservations.reduce((sum, res) => {
-                        const checkIn = new Date(res.check_in);
-                        const checkOut = new Date(res.check_out);
-                        const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-                        return sum + (res.price * nights);
+                        return sum + res.price; // Le prix est déjà le total
                       }, 0);
                       const percentage = reservations.filter(r => r.status !== 'cancelled').length > 0 
                         ? Math.round((planReservations.length / reservations.filter(r => r.status !== 'cancelled').length) * 100) 
@@ -1448,7 +1578,7 @@ export default function AdminPage() {
                             ></div>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
-                            {planReservations.length} réservation{planReservations.length > 1 ? 's' : ''} - {totalAmount.toLocaleString()} FCFA
+                            {planReservations.length} réservation{planReservations.length > 1 ? 's' : ''} - {totalAmount.toLocaleString()} XPF
                           </p>
                         </div>
                       );

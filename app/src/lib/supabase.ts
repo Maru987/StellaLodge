@@ -56,6 +56,13 @@ export interface Reservation {
   status?: 'pending' | 'confirmed' | 'cancelled';
 }
 
+// Configuration EmailJS
+const EMAILJS_CONFIG = {
+  serviceId: 'service_pbiqcyx',
+  templateId: 'template_e3od60e',
+  publicKey: '-8S2ei9hyodrAvn7Q'
+};
+
 // Type pour les images de la galerie
 export interface GalleryImage {
   id?: string;
@@ -149,7 +156,9 @@ export async function saveReservation(reservation: Reservation) {
         data = { id: "generated-" + Date.now() };
       }
       
-      return { success: true, data: Array.isArray(data) ? data[0] : data };
+      const reservationData = Array.isArray(data) ? data[0] : data;
+      
+      return { success: true, data: reservationData };
     } catch (fetchError) {
       // En cas d'erreur, utiliser la simulation comme solution de secours
       const mockReservation = {
@@ -434,4 +443,6 @@ export async function fetchConfirmedReservations() {
       error: error instanceof Error ? error : new Error(String(error)) 
     };
   }
-} 
+}
+
+ 

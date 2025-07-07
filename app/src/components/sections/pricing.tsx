@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
 import { Pricing as PricingComponent } from '@/components/blocks/pricing';
+import { PublicCalendar } from '@/components/ui/public-calendar';
 
 interface PricingProps {
   property: Property;
@@ -32,7 +33,7 @@ export function Pricing({ property, className }: PricingProps) {
       features: [
         "Accès à toutes les commodités",
         "Support 24/7",
-        "Check-in à 15h",
+        "Check-in à 14h",
         "Check-out à 11h",
       ],
       description: "Parfait pour des courts séjours",
@@ -48,7 +49,7 @@ export function Pricing({ property, className }: PricingProps) {
       features: [
         "Accès à toutes les commodités",
         "Support 24/7",
-        "Check-in à 15h",
+        "Check-in à 14h",
         "Économisez 10% par rapport à la nuitée",
         "Check-out à 11h",
       ],
@@ -65,7 +66,7 @@ export function Pricing({ property, className }: PricingProps) {
       features: [
         "Accès à toutes les commodités",
         "Support 24/7",
-        "Check-in à 15h",
+        "Check-in à 14h",
         "Économisez 20% par rapport à la nuitée",
         "Check-out à 11h",
       ],
@@ -73,6 +74,24 @@ export function Pricing({ property, className }: PricingProps) {
       buttonText: "Réserver maintenant",
       href: "#contact",
       isPopular: true,
+    },
+    {
+      name: "AU MOIS",
+      price: "Sur demande",
+      yearlyPrice: "Sur demande",
+      period: "par mois",
+      features: [
+        "Accès à toutes les commodités",
+        "Support 24/7",
+        "Check-in à 14h",
+        "Tarifs négociables selon durée",
+        "Check-out à 11h",
+        "Contact direct pour réservation",
+      ],
+      description: "Pour des séjours prolongés, contactez-nous directement pour discuter des tarifs et conditions",
+      buttonText: "Nous contacter",
+      href: "#contact",
+      isPopular: false,
     }
   ];
 
@@ -105,6 +124,28 @@ export function Pricing({ property, className }: PricingProps) {
           title=""
           description=""
         />
+
+        {/* Calendrier des disponibilités */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-16"
+        >
+          <div className="text-center mb-8">
+            <h3 className="text-2xl md:text-3xl font-heading font-bold mb-4 text-primary">
+              Calendrier des disponibilités
+            </h3>
+            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+              Consultez notre calendrier pour voir les dates déjà réservées et planifier votre séjour en conséquence.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <PublicCalendar />
+          </div>
+        </motion.div>
       </div>
     </section>
   );

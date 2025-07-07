@@ -17,6 +17,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { saveReservation, Reservation } from "@/lib/supabase";
+
+// Configuration EmailJS
+const EMAILJS_CONFIG = {
+  serviceId: 'service_sy7ug52',
+  templateId: 'template_e3od60e',
+  publicKey: '-8S2ei9hyodrAvn7Q'
+};
 import {
   Dialog,
   DialogContent,
@@ -90,24 +97,31 @@ export function Pricing({
     
     // Validation selon le forfait
     switch (selectedPlan.name) {
-      case "JOURNALIER":
+      case "NUITÉ":
         // Pour le forfait journalier, on peut réserver une seule nuit
         if (diffDays !== 1) {
           setDateError("Le forfait journalier permet de réserver une seule nuit.");
           return false;
         }
         break;
-      case "2 à 5 NUITS":
+      case "2 À 5 NUITS":
         // Pour le forfait 2 à 5 nuits, on peut réserver entre 2 et 5 nuits
         if (diffDays < 2 || diffDays > 5) {
           setDateError("Le forfait 2 à 5 nuits permet de réserver entre 2 et 5 nuits.");
           return false;
         }
         break;
-      case "HEBDOMADAIRE":
+      case "LA SEMAINE":
         // Pour le forfait hebdomadaire, on peut réserver 7 nuits ou plus
         if (diffDays < 7) {
           setDateError("Le forfait hebdomadaire permet de réserver 7 nuits ou plus.");
+          return false;
+        }
+        break;
+      case "AU MOIS":
+        // Pour le forfait mensuel, on peut réserver 30 nuits ou plus
+        if (diffDays < 30) {
+          setDateError("Le forfait mensuel permet de réserver 30 nuits ou plus.");
           return false;
         }
         break;
@@ -122,7 +136,7 @@ export function Pricing({
   // Fonction pour gérer la sélection de dates
   const handleDateSelect = (range: DateRange | undefined) => {
     if (!range || !range.from || !selectedPlan) {
-      setDateRange(range);
+    setDateRange(range);
       setDateError(null);
       return;
     }
@@ -171,21 +185,27 @@ export function Pricing({
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     switch (selectedPlan.name) {
-      case "JOURNALIER":
+      case "NUITÉ":
         if (diffDays !== 1) {
           setSubmitError("Le forfait journalier permet de réserver une seule nuit");
           return;
         }
         break;
-      case "2 à 5 NUITS":
+      case "2 À 5 NUITS":
         if (diffDays < 2 || diffDays > 5) {
           setSubmitError("Le forfait 2 à 5 nuits permet de réserver entre 2 et 5 nuits");
           return;
         }
         break;
-      case "HEBDOMADAIRE":
+      case "LA SEMAINE":
         if (diffDays < 7) {
           setSubmitError("Le forfait hebdomadaire permet de réserver 7 nuits ou plus");
+          return;
+        }
+        break;
+      case "AU MOIS":
+        if (diffDays < 30) {
+          setSubmitError("Le forfait mensuel permet de réserver 30 nuits ou plus");
           return;
         }
         break;
@@ -224,6 +244,13 @@ export function Pricing({
       const result = await saveReservation(reservationData);
       
       if (result.success) {
+        // Envoyer l'email de notification (en arrière-plan, ne pas bloquer)
+        try {
+          await sendReservationEmail(reservationData);
+        } catch (emailError) {
+          console.error('Erreur lors de l\'envoi de l\'email (non bloquant):', emailError);
+        }
+        
         setSubmitSuccess(true);
         // Réinitialisation du formulaire
         setFormData({
@@ -250,7 +277,73 @@ export function Pricing({
     }
   };
 
+  // Fonction pour envoyer un email de notification via EmailJS
+  const sendReservationEmail = async (reservation: Reservation) => {
+    try {
+      // Import dynamique d'EmailJS (côté client uniquement)
+      const emailjs = await import('@emailjs/browser');
+      
+      // Formater les dates pour l'affichage
+      const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      };
+
+      // Préparer les données pour le template EmailJS
+      const templateParams = {
+        to_name: 'Équipe Stella Lodge',
+        from_name: reservation.name,
+        client_name: reservation.name,
+        client_email: reservation.email,
+        client_phone: reservation.phone,
+        plan_name: reservation.plan_name,
+        price: `${reservation.price.toLocaleString('fr-FR')} XPF`,
+        period: reservation.period,
+        check_in: formatDate(reservation.check_in),
+        check_out: formatDate(reservation.check_out),
+        guests: reservation.guests.toString(),
+        message: reservation.message || 'Aucun message',
+        reservation_date: new Date().toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      };
+
+      console.log('Envoi de l\'email avec les paramètres:', templateParams);
+
+      // Envoyer l'email via EmailJS
+      const result = await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        templateParams,
+        EMAILJS_CONFIG.publicKey
+      );
+
+      console.log('Email envoyé avec succès:', result);
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de l\'email:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error : new Error(String(error)) 
+      };
+    }
+  };
+
   const openReservationDialog = (plan: PricingPlan) => {
+    // Si c'est le plan "AU MOIS", rediriger vers la section contact
+    if (plan.name === "AU MOIS") {
+      scrollToSection('contact');
+      return;
+    }
+    
     setSelectedPlan(plan);
     setOpen(true);
     setSubmitError(null);
@@ -342,75 +435,75 @@ export function Pricing({
                   </div>
                 </div>
               )}
-
+              
               {step === 1 && (
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="name" className="text-sm">Nom complet</Label>
-                    <Input 
-                      id="name" 
-                      name="name" 
-                      placeholder="Votre nom" 
-                      value={formData.name} 
-                      onChange={handleChange} 
-                      required 
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="email" className="text-sm">Email</Label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      placeholder="votre@email.com" 
-                      value={formData.email} 
-                      onChange={handleChange} 
-                      required 
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="phone" className="text-sm">Téléphone</Label>
-                    <Input 
-                      id="phone" 
-                      name="phone" 
-                      placeholder="Votre numéro de téléphone" 
-                      value={formData.phone} 
-                      onChange={handleChange} 
-                      required 
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="guests" className="text-sm">Nombre de personnes</Label>
-                    <Input 
-                      id="guests" 
-                      name="guests" 
-                      type="number" 
-                      min="1" 
-                      placeholder="Nombre de voyageurs" 
-                      value={formData.guests} 
-                      onChange={handleChange} 
-                      required 
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="message" className="text-sm">Autre chose à savoir ?</Label>
-                    <Textarea 
-                      id="message" 
-                      name="message" 
-                      placeholder="Informations complémentaires..." 
-                      value={formData.message} 
-                      onChange={handleChange} 
-                      className="min-h-[80px] text-sm"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="name" className="text-sm">Nom complet</Label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    placeholder="Votre nom" 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                    required 
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-sm">Email</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="votre@email.com" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    required 
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="phone" className="text-sm">Téléphone</Label>
+                  <Input 
+                    id="phone" 
+                    name="phone" 
+                    placeholder="Votre numéro de téléphone" 
+                    value={formData.phone} 
+                    onChange={handleChange} 
+                    required 
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="guests" className="text-sm">Nombre de personnes</Label>
+                  <Input 
+                    id="guests" 
+                    name="guests" 
+                    type="number" 
+                    min="1" 
+                    placeholder="Nombre de voyageurs" 
+                    value={formData.guests} 
+                    onChange={handleChange} 
+                    required 
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="message" className="text-sm">Autre chose à savoir ?</Label>
+                  <Textarea 
+                    id="message" 
+                    name="message" 
+                    placeholder="Informations complémentaires..." 
+                    value={formData.message} 
+                    onChange={handleChange} 
+                    className="min-h-[80px] text-sm"
+                  />
+                </div>
                   <Button type="button" className="w-full bg-blue-600 hover:bg-blue-700 h-9 text-sm" onClick={() => setStep(2)}>
                     Suivant
                   </Button>
-                </div>
+              </div>
               )}
 
               {step === 2 && (
@@ -444,27 +537,27 @@ export function Pricing({
                     )}
                     {selectedPlan && !dateError && (
                       <p className="text-xs text-blue-600 mt-2 text-center w-full">
-                        {selectedPlan.name === "JOURNALIER" && "Sélectionnez 1 nuit"}
-                        {selectedPlan.name === "2 à 5 NUITS" && "Sélectionnez entre 2 et 5 nuits"}
-                        {selectedPlan.name === "HEBDOMADAIRE" && "Sélectionnez entre 7 et 29 nuits"}
-                        {selectedPlan.name === "MENSUEL" && "Sélectionnez 30 nuits ou plus"}
+                        {selectedPlan.name === "NUITÉ" && "Sélectionnez 1 nuit"}
+                        {selectedPlan.name === "2 À 5 NUITS" && "Sélectionnez entre 2 et 5 nuits"}
+                        {selectedPlan.name === "LA SEMAINE" && "Sélectionnez 7 nuits ou plus"}
+                        {selectedPlan.name === "AU MOIS" && "Sélectionnez 30 nuits ou plus"}
                       </p>
                     )}
                   </div>
                   <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-9 text-sm mt-4" disabled={!dateRange || isSubmitting}>
-                    {isSubmitting ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Envoi en cours...
-                      </span>
+                  {isSubmitting ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Envoi en cours...
+                    </span>
                     ) : "Confirmer"}
                   </Button>
                   <Button type="button" variant="outline" className="w-full h-9 text-sm mt-2" onClick={() => setStep(1)}>
                     Retour
-                  </Button>
+                </Button>
                 </div>
               )}
             </form>
@@ -472,7 +565,7 @@ export function Pricing({
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
         {plans.map((plan, index) => (
           <motion.div
             key={index}
@@ -527,14 +620,27 @@ export function Pricing({
                 transition={{ delay: index * 0.1 + 0.3, duration: 0.4, type: "spring" }}
                 className="mt-3 mb-3 flex items-center justify-center"
               >
-                <span className="text-4xl font-bold tracking-tight text-black flex items-baseline">
-                  {Number(plan.price).toLocaleString('fr-FR')}
-                  <span className="text-xl ml-1 text-gray-700">XPF</span>
-                </span>
-                {plan.period !== "Next 3 months" && (
-                  <span className="text-sm font-semibold leading-6 tracking-wide text-gray-700 ml-2">
-                    / {plan.period}
-                  </span>
+                {plan.name === "AU MOIS" ? (
+                  <div className="text-center">
+                    <span className="text-3xl font-bold tracking-tight text-black">
+                      {plan.price}
+                    </span>
+                    <div className="text-sm font-semibold leading-6 tracking-wide text-gray-700 mt-1">
+                      {plan.period}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-4xl font-bold tracking-tight text-black flex items-baseline">
+                      {Number(plan.price).toLocaleString('fr-FR')}
+                      <span className="text-xl ml-1 text-gray-700">XPF</span>
+                    </span>
+                    {plan.period !== "Next 3 months" && (
+                      <span className="text-sm font-semibold leading-6 tracking-wide text-gray-700 ml-2">
+                        / {plan.period}
+                      </span>
+                    )}
+                  </>
                 )}
               </motion.div>
 
@@ -570,7 +676,9 @@ export function Pricing({
                       }),
                       "w-full py-2 text-base font-semibold",
                       "transform-gpu transition-all duration-300 ease-out hover:ring-2 hover:ring-blue-600 hover:ring-offset-1",
-                      plan.isPopular
+                      plan.name === "AU MOIS"
+                        ? "bg-green-600 text-white border-green-600 hover:bg-green-700"
+                        : plan.isPopular
                         ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
                         : "bg-white text-gray-900 border-gray-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
                     )}
