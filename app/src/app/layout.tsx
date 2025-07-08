@@ -9,7 +9,7 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "Stella Lodge Tahiti - Un paradis tropical en Polynésie française",
+  title: "Stella Lodge Tahiti",
   description: "Un Lodge chaleureux au cœur de Tahiti",
   keywords: "Tahiti, lodge, hébergement, Polynésie française, vacances, luxe, tropical",
 };
