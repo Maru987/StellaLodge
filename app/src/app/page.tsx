@@ -9,6 +9,7 @@ import { Amenities } from '@/components/sections/amenities';
 import { Location } from '@/components/sections/location';
 import { Pricing } from '@/components/sections/pricing';
 import { Contact } from '@/components/sections/contact';
+import { ScrollToTop } from '@/components/ui/scroll-to-top';
 import { propertyData } from '@/config/property-config';
 
 export default function Home() {
@@ -43,6 +44,8 @@ export default function Home() {
       )}
       
       <Footer property={propertyData} />
+      
+      <ScrollToTop />
     </main>
   );
 }

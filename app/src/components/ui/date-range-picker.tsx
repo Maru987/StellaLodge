@@ -63,49 +63,49 @@ export function DatePickerWithRange({
       return false;
     });
   };
-  
+
+  // Créer la liste des dates réservées individuelles
+  const getReservedDatesArray = () => {
+    const reservedDatesArray: Date[] = [];
+    reservedDates.forEach(range => {
+      if (range.from && range.to) {
+        let currentDate = new Date(range.from);
+        while (currentDate <= range.to) {
+          reservedDatesArray.push(new Date(currentDate));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+    });
+    return reservedDatesArray;
+  };
+
   // Fonction pour personnaliser l'apparence des jours dans le calendrier
   const modifiersStyles = {
     reserved: {
-      backgroundColor: 'rgba(239, 68, 68, 0.2)', // Rouge clair
-      color: '#b91c1c', // Rouge foncé
+      backgroundColor: 'rgba(239, 68, 68, 0.2)',
+      color: '#b91c1c',
       fontWeight: 'bold',
       cursor: 'not-allowed'
-    },
-    past: {
-      textDecoration: 'line-through',
-      color: '#4b5563', // Gris foncé
-      cursor: 'not-allowed',
-      backgroundColor: 'transparent' // Pas de fond coloré
     }
   };
-  
-  // Fonction pour désactiver les dates réservées et les dates passées
+
+  // Configuration des modificateurs
+  const modifiers = {
+    reserved: getReservedDatesArray()
+  };
+
+  // Dates à désactiver
   const disabledDays = [
-    // Dates réservées
-    ...reservedDates.flatMap(range => {
-      if (range.from && range.to) {
-        // Créer un tableau de toutes les dates dans la plage
-        const days = [];
-        let currentDate = new Date(range.from);
-        while (currentDate <= range.to) {
-          days.push(new Date(currentDate));
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-        return days;
-      }
-      return [];
-    }),
     // Dates passées (avant aujourd'hui)
-    { before: today }
+    { before: today },
+    // Dates réservées
+    ...getReservedDatesArray()
   ];
-  
-  // Dates passées pour le style (séparées des dates réservées)
-  const pastDays = { before: today };
 
   // Fermer le popover uniquement si la plage est complète (from + to)
   const handleSelect = (range: DateRange | undefined) => {
     onSelect(range);
+    // Fermer automatiquement seulement si une plage complète est sélectionnée
     if (range && range.from && range.to) {
       setOpen(false);
     }
@@ -164,7 +164,7 @@ export function DatePickerWithRange({
               locale={fr}
               className="max-w-[100vw] md:max-w-none"
               disabled={disabledDays}
-              modifiers={{ reserved: disabledDays, past: pastDays }}
+              modifiers={modifiers}
               modifiersStyles={modifiersStyles}
               fromDate={today}
             />

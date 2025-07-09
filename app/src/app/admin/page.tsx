@@ -76,10 +76,7 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const pathname = usePathname()
   const [isAddReservationOpen, setIsAddReservationOpen] = useState(false)
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(),
-    to: addDays(new Date(), 1),
-  })
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [reservationStep, setReservationStep] = useState<'info' | 'dates'>('info')
   const [newReservation, setNewReservation] = useState({
     name: "",
@@ -361,10 +358,7 @@ export default function AdminPage() {
         price: 25000,
         period: "1 nuit"
       })
-      setDateRange({
-        from: new Date(),
-        to: addDays(new Date(), 1),
-      })
+      setDateRange(undefined)
       
       // Réinitialiser l'étape et fermer le dialogue
       setReservationStep('info')
@@ -902,8 +896,11 @@ export default function AdminPage() {
                           <DatePickerWithRange 
                             date={dateRange}
                             onSelect={(range: DateRange | undefined) => {
+                              // Toujours mettre à jour dateRange, même si seulement 'from' est défini
+                              setDateRange(range);
+                              
+                              // Calculer le plan tarifaire seulement si les deux dates sont définies
                               if (range && range.from && range.to) {
-                                setDateRange(range);
                                 // Calculer la durée du séjour
                                 const nights = Math.ceil((range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24));
                                 
